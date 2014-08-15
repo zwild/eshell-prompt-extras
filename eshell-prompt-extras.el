@@ -41,7 +41,8 @@
 ;; package-install: eshell-prompt-extras.
 
 ;; Usage
-;; (require 'eshell-prompt-extras)
+;; (eval-after-load 'esh-opt
+;;   (require 'eshell-prompt-extras))
 
 ;;; Code:
 (require 'em-prompt)
