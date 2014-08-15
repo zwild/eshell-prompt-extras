@@ -3,7 +3,7 @@
 ;; Copyright (C) 2014 Wei Zhao
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
 ;; Git: https://github.com/kaihaosw/eshell-prompt-extras.git
-;; Version: 0.2
+;; Version: 0.3
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
 
@@ -44,6 +44,10 @@
 ;; Usage
 ;; (eval-after-load 'esh-opt
 ;;   (require 'eshell-prompt-extras))
+
+;; Config
+;; (setq epe-symbol nil)      remove sysbol
+;; (setq epe-symbol "道")     or what sysbol you love
 
 ;;; Code:
 (require 'em-prompt)
@@ -122,8 +126,10 @@
              (concat (epe-git-branch) (epe-git-dirty))
              'font-lock-constant-face)))
 
+         " "                            ; space between them
+
          (when epe-symbol
-           (epe-colorize (concat " " epe-symbol) 'eshell-ls-unreadable-face))
+           (epe-colorize epe-symbol 'eshell-ls-unreadable-face))
 
          (epe-colorize (if (= (user-uid) 0) "#" "|") 'eshell-ls-unreadable-face)
 

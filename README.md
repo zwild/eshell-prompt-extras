@@ -26,4 +26,10 @@ Usage
     (eval-after-load 'esh-opt
       (require 'eshell-prompt-extras))
 
+Config
+------
+
+Remove sysbol: `(setq epe-symbol nil)`  
+Set what sysbol you love: `(setq epe-symbol "道")`  
+
 ![](./screenshot.png?raw=true)
