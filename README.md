@@ -13,7 +13,7 @@ need to install `virtualenvwrapper`.
 
     pip install virtualenvwrapper
 
-And `virtualenvwrapper.el`
+And [virtualenvwrapper.el](https://github.com/porterjamesj/virtualenvwrapper.el)
 
 Installation
 ------------
