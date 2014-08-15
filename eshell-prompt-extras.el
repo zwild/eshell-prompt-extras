@@ -3,10 +3,9 @@
 ;; Copyright (C) 2014 Wei Zhao
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
 ;; Git: https://github.com/kaihaosw/eshell-prompt-extras.git
-;; Version: 0.1
+;; Version: 0.2
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
-;; Package-Requires:((virtualenvwrapper "20131514"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -33,7 +32,9 @@
 ;; environment info, git branch and git dirty info for eshell prompt.
 
 ;; If you want to display the python virtual environment info, you
-;; need to install `virtualenvwrapper'.
+;; need to install `virtualenvwrapper' and `virtualenvwrapper.el'.
+;; pip install virtualenvwrapper
+;; M-x: package-install: virtualenvwrapper
 
 ;; Installation
 ;; It is recommended installed by the ELPA package system.
@@ -49,7 +50,11 @@
 (require 'em-ls)
 (require 'em-unix)
 (require 'tramp)
-(require 'virtualenvwrapper)
+(when (require 'virtualenvwrapper nil t)
+  (defun epe-venv-p ()
+    "If you are `workon' some virtual environment."
+    (and (eshell-search-path "virtualenvwrapper.sh")
+         venv-current-name)))
 
 (defvar epe-symbol "λ"
   "The symbol you love.")
@@ -74,11 +79,6 @@
 (defun epe-remote-host ()
   "Return remote host."
   (tramp-file-name-real-host (tramp-dissect-file-name default-directory)))
-
-(defun epe-venv-p ()
-  "If you are `workon' some virtual environment."
-  (and (eshell-search-path "virtualenvwrapper.sh")
-       venv-current-name))
 
 (defun epe-git-p ()
   "If you installed git and in a git project."
@@ -109,8 +109,9 @@
             (concat (epe-remote-user) "@" (epe-remote-host) " ")
             'font-lock-comment-face))
 
-         (when (epe-venv-p)
-           (epe-colorize (concat "(" venv-current-name ") ") 'font-lock-comment-face))
+         (when (fboundp 'epe-venv-p)
+           (when (epe-venv-p)
+             (epe-colorize (concat "(" venv-current-name ") ") 'font-lock-comment-face)))
 
          (epe-colorize (epe-abbrev-dir-name (eshell/pwd)) 'eshell-ls-directory-face)
 
