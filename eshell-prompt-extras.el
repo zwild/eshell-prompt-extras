@@ -3,7 +3,7 @@
 ;; Copyright (C) 2014 Wei Zhao
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
 ;; Git: https://github.com/kaihaosw/eshell-prompt-extras.git
-;; Version: 0.3
+;; Version: 0.4
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
 
@@ -44,6 +44,11 @@
 ;; Usage
 ;; (eval-after-load 'esh-opt
 ;;   (require 'eshell-prompt-extras))
+;; If you want to display python virtual environment information:
+;; (eval-after-load 'esh-opt
+;;   (require 'virtualenvwrapper)
+;;   (venv-initialize-eshell)
+;;   (require 'eshell-prompt-extras))
 
 ;; Config
 ;; (setq epe-symbol nil)      remove sysbol
@@ -52,7 +57,6 @@
 ;;; Code:
 (require 'em-prompt)
 (require 'em-ls)
-(require 'em-unix)
 (require 'esh-ext)
 (require 'tramp)
 (when (require 'virtualenvwrapper nil t)
