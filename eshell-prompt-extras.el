@@ -53,6 +53,7 @@
 (require 'em-prompt)
 (require 'em-ls)
 (require 'em-unix)
+(require 'esh-ext)
 (require 'tramp)
 (when (require 'virtualenvwrapper nil t)
   (defun epe-venv-p ()
