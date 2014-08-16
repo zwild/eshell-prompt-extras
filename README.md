@@ -26,6 +26,13 @@ Usage
     (eval-after-load 'esh-opt
       (require 'eshell-prompt-extras))
 
+If you want to display python virtual environment information.
+
+    (eval-after-load 'esh-opt
+      (require 'virtualenvwrapper)
+      (venv-initialize-eshell)
+      (require 'eshell-prompt-extras))
+
 Config
 ------
 
