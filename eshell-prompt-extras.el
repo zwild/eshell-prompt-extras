@@ -61,7 +61,7 @@
 (require 'tramp)
 (when (require 'virtualenvwrapper nil t)
   (defun epe-venv-p ()
-    "If you are `workon' some virtual environment."
+    "If you are `workon'ing some virtual environment."
     (and (eshell-search-path "virtualenvwrapper.sh")
          venv-current-name)))
 
@@ -106,6 +106,10 @@
   (if (string-match "nothing to commit.*clean"
                     (shell-command-to-string "git status"))
       "" "*"))
+
+(defun epe-git-unpushed-number ()
+  "Return unpushed number."
+  (string-to-int (shell-command-to-string "git log @{u}.. --oneline | wc -l")))
 
 (setq eshell-prompt-regexp "^[^#\n|]*[#|] "
       eshell-highlight-prompt nil
