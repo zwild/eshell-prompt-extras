@@ -3,7 +3,7 @@
 ;; Copyright (C) 2014 Wei Zhao
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
 ;; Git: https://github.com/kaihaosw/eshell-prompt-extras.git
-;; Version: 0.4
+;; Version: 0.5
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
 
@@ -109,7 +109,8 @@
 
 (defun epe-git-unpushed-number ()
   "Return unpushed number."
-  (string-to-int (shell-command-to-string "git log @{u}.. --oneline | wc -l")))
+  (string-to-int
+   (shell-command-to-string "git log @{u}.. --oneline 2> /dev/null | wc -l")))
 
 (setq eshell-prompt-regexp "^[^#\n|]*[#|] "
       eshell-highlight-prompt nil
@@ -132,7 +133,10 @@
            (concat
             (epe-colorize ":" 'eshell-ls-directory-face)
             (epe-colorize
-             (concat (epe-git-branch) (epe-git-dirty))
+             (concat (epe-git-branch)
+                     (epe-git-dirty)
+                     (unless (= (epe-git-unpushed-number) 0)
+                       (concat ":" (number-to-string (epe-git-unpushed-number)))))
              'font-lock-constant-face)))
 
          " "                            ; space between them
