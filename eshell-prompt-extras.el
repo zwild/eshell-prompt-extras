@@ -29,7 +29,8 @@
 ;;; Commentary:
 
 ;; This library display remote user, remote host, python virtual
-;; environment info, git branch and git dirty info for eshell prompt.
+;; environment info, git branch, git dirty info and git unpushed
+;; number for eshell prompt.
 
 ;; If you want to display the python virtual environment info, you
 ;; need to install `virtualenvwrapper' and `virtualenvwrapper.el'.
@@ -117,18 +118,14 @@
       eshell-prompt-function
       (lambda ()
         (concat
-
          (when (epe-remote-p)
            (epe-colorize
             (concat (epe-remote-user) "@" (epe-remote-host) " ")
             'font-lock-comment-face))
-
          (when (fboundp 'epe-venv-p)
            (when (epe-venv-p)
              (epe-colorize (concat "(" venv-current-name ") ") 'font-lock-comment-face)))
-
          (epe-colorize (epe-abbrev-dir-name (eshell/pwd)) 'eshell-ls-directory-face)
-
          (when (epe-git-p)
            (concat
             (epe-colorize ":" 'eshell-ls-directory-face)
@@ -138,14 +135,10 @@
                      (unless (= (epe-git-unpushed-number) 0)
                        (concat ":" (number-to-string (epe-git-unpushed-number)))))
              'font-lock-constant-face)))
-
          " "                            ; space between them
-
          (when epe-symbol
            (epe-colorize epe-symbol 'eshell-ls-unreadable-face))
-
          (epe-colorize (if (= (user-uid) 0) "#" "|") 'eshell-ls-unreadable-face)
-
          " ")))
 
 (provide 'eshell-prompt-extras)

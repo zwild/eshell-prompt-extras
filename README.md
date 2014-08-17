@@ -6,7 +6,8 @@ Display extra information and color for your eshell prompt.
 Introtuction
 ------------
 This library display remote user, remote host, python virtual  
-environment info, git branch and git dirty info for eshell prompt.  
+environment info, git branch, git dirty info and git unpushed number  
+for eshell prompt.  
 
 If you want to display the python virtual environment info, you  
 need to install `virtualenvwrapper`.  
