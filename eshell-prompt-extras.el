@@ -3,7 +3,7 @@
 ;; Copyright (C) 2014 Wei Zhao
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
 ;; Git: https://github.com/kaihaosw/eshell-prompt-extras.git
-;; Version: 0.7
+;; Version: 0.71
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
 
@@ -89,6 +89,16 @@
     (let ((dirname (eshell/basename dir)))
       (if (string= dirname "") "/" dirname))))
 
+(defun epe-user-name ()
+  "User information."
+  (if (epe-remote-p)
+      (epe-remote-user)
+    (getenv "USER")))
+
+(defun epe-date-time (&optional format)
+  "Date time information."
+  (format-time-string (if format format "%Y-%m-%d %H:%M") (current-time)))
+
 
 ;; tramp info
 (defun epe-remote-p ()
@@ -169,6 +179,10 @@
 
 
 ;; An example theme. Please post your theme here if you want.
+
+;; (setq eshell-prompt-regexp "^[^#\n|]*[#|] "
+;;       eshell-highlight-prompt nil
+;;       eshell-prompt-function 'epe-theme-lambda)
 (defun epe-theme-lambda ()
   "A eshell-prompt lambda theme. Using this theme,
 please set eshell-prompt-regexp with '^[^#\n|]*[#|] ' "
