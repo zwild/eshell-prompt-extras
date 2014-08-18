@@ -3,7 +3,7 @@
 ;; Copyright (C) 2014 Wei Zhao
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
 ;; Git: https://github.com/kaihaosw/eshell-prompt-extras.git
-;; Version: 0.5
+;; Version: 0.6
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
 
@@ -44,20 +44,24 @@
 
 ;; Usage
 ;; (eval-after-load 'esh-opt
-;;   (require 'eshell-prompt-extras))
+;;   (progn
+;;     (require 'eshell-prompt-extras)
+;;     (setq eshell-prompt-regexp "^[^#\n|]*[#|] "
+;;           eshell-highlight-prompt nil
+;;           eshell-prompt-function 'epe-theme-lambda)))
 ;; If you want to display python virtual environment information:
 ;; (eval-after-load 'esh-opt
-;;   (require 'virtualenvwrapper)
-;;   (venv-initialize-eshell)
-;;   (require 'eshell-prompt-extras))
-
-;; Config
-;; (setq epe-symbol nil)      remove sysbol
-;; (setq epe-symbol "道")     or what sysbol you love
+;;   (progn
+;;     (require 'virtualenvwrapper)
+;;     (venv-initialize-eshell)
+;;     (require 'eshell-prompt-extras)
+;;     (setq eshell-prompt-regexp "^[^#\n|]*[#|] "
+;;           eshell-highlight-prompt nil
+;;           eshell-prompt-function 'epe-theme-lambda)))
 
 ;;; Code:
-(require 'em-prompt)
 (require 'em-ls)
+(require 'em-dirs)
 (require 'esh-ext)
 (require 'tramp)
 (when (require 'virtualenvwrapper nil t)
@@ -66,10 +70,7 @@
     (and (eshell-search-path "virtualenvwrapper.sh")
          venv-current-name)))
 
-(defvar epe-symbol "λ"
-  "The symbol you love.")
-
-(defmacro epe-colorize (str face)
+(defmacro epe-colorize-with-face (str face)
   `(propertize ,str 'face ,face))
 
 (defun epe-abbrev-dir-name (dir)
@@ -110,36 +111,35 @@
 
 (defun epe-git-unpushed-number ()
   "Return unpushed number."
-  (string-to-int
+  (string-to-number
    (shell-command-to-string "git log @{u}.. --oneline 2> /dev/null | wc -l")))
 
-(setq eshell-prompt-regexp "^[^#\n|]*[#|] "
-      eshell-highlight-prompt nil
-      eshell-prompt-function
-      (lambda ()
-        (concat
-         (when (epe-remote-p)
-           (epe-colorize
-            (concat (epe-remote-user) "@" (epe-remote-host) " ")
-            'font-lock-comment-face))
-         (when (fboundp 'epe-venv-p)
-           (when (epe-venv-p)
-             (epe-colorize (concat "(" venv-current-name ") ") 'font-lock-comment-face)))
-         (epe-colorize (epe-abbrev-dir-name (eshell/pwd)) 'eshell-ls-directory-face)
-         (when (epe-git-p)
-           (concat
-            (epe-colorize ":" 'eshell-ls-directory-face)
-            (epe-colorize
-             (concat (epe-git-branch)
-                     (epe-git-dirty)
-                     (unless (= (epe-git-unpushed-number) 0)
-                       (concat ":" (number-to-string (epe-git-unpushed-number)))))
-             'font-lock-constant-face)))
-         " "                            ; space between them
-         (when epe-symbol
-           (epe-colorize epe-symbol 'eshell-ls-unreadable-face))
-         (epe-colorize (if (= (user-uid) 0) "#" "|") 'eshell-ls-unreadable-face)
-         " ")))
+
+;; An example theme. Please post your theme here if you want.
+(defun epe-theme-lambda ()
+  "A eshell-prompt lambda theme. Using this theme,
+please set eshell-prompt-regexp with '^[^#\n|]*[#|] ' "
+  (concat
+   (when (epe-remote-p)
+     (epe-colorize-with-face
+      (concat (epe-remote-user) "@" (epe-remote-host) " ")
+      'font-lock-comment-face))
+   (when (fboundp 'epe-venv-p)
+     (when (epe-venv-p)
+       (epe-colorize-with-face (concat "(" venv-current-name ") ") 'font-lock-comment-face)))
+   (epe-colorize-with-face (epe-abbrev-dir-name (eshell/pwd)) 'eshell-ls-directory-face)
+   (when (epe-git-p)
+     (concat
+      (epe-colorize-with-face ":" 'eshell-ls-directory-face)
+      (epe-colorize-with-face
+       (concat (epe-git-branch)
+               (epe-git-dirty)
+               (unless (= (epe-git-unpushed-number) 0)
+                 (concat ":" (number-to-string (epe-git-unpushed-number)))))
+       'font-lock-constant-face)))
+   (epe-colorize-with-face " λ" 'eshell-ls-unreadable-face)
+   (epe-colorize-with-face (if (= (user-uid) 0) "#" "|") 'eshell-ls-unreadable-face)
+   " "))
 
 (provide 'eshell-prompt-extras)
 

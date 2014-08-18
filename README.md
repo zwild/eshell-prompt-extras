@@ -25,19 +25,19 @@ You could install it by `M-x`: with
 Usage
 -----
     (eval-after-load 'esh-opt
-      (require 'eshell-prompt-extras))
+      (progn
+        (require 'eshell-prompt-extras)
+        (setq eshell-prompt-regexp "^[^#\n|]*[#|] "
+             eshell-highlight-prompt nil
+             eshell-prompt-function 'epe-theme-lambda)))
 
 If you want to display python virtual environment information.
 
     (eval-after-load 'esh-opt
-      (require 'virtualenvwrapper)
-      (venv-initialize-eshell)
-      (require 'eshell-prompt-extras))
-
-Config
-------
-
-Remove sysbol: `(setq epe-symbol nil)`  
-Set what sysbol you love: `(setq epe-symbol "道")`  
-
-![](./screenshot.png?raw=true)
+      (progn
+        (require 'virtualenvwrapper)
+        (venv-initialize-eshell)
+        (require 'eshell-prompt-extras)
+        (setq eshell-prompt-regexp "^[^#\n|]*[#|] "
+             eshell-highlight-prompt nil
+             eshell-prompt-function 'epe-theme-lambda))))
