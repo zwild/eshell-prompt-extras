@@ -3,7 +3,7 @@
 ;; Copyright (C) 2014 Wei Zhao
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
 ;; Git: https://github.com/kaihaosw/eshell-prompt-extras.git
-;; Version: 0.6
+;; Version: 0.7
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
 
@@ -70,8 +70,17 @@
     (and (eshell-search-path "virtualenvwrapper.sh")
          venv-current-name)))
 
+;; (epe-colorize "abc" "red")
+(defmacro epe-colorize (str color)
+  `(propertize ,str 'face '(:foreground ,color)))
+
+;; (epe-colorize-with-face "abc" 'font-lock-comment-face)
 (defmacro epe-colorize-with-face (str face)
   `(propertize ,str 'face ,face))
+
+;; (epe-colorize-with-properties "abc" :foreground "red" :backgroud "black")
+(defmacro epe-colorize-with-properties (str &rest properties)
+  `(propertize ,str 'face (list ,@properties)))
 
 (defun epe-abbrev-dir-name (dir)
   "Return the base directory name."
@@ -80,6 +89,8 @@
     (let ((dirname (eshell/basename dir)))
       (if (string= dirname "") "/" dirname))))
 
+
+;; tramp info
 (defun epe-remote-p ()
   (tramp-tramp-file-p default-directory))
 
@@ -91,6 +102,8 @@
   "Return remote host."
   (tramp-file-name-real-host (tramp-dissect-file-name default-directory)))
 
+
+;; git info
 (defun epe-git-p ()
   "If you installed git and in a git project."
   (and (eshell-search-path "git")
@@ -113,6 +126,46 @@
   "Return unpushed number."
   (string-to-number
    (shell-command-to-string "git log @{u}.. --oneline 2> /dev/null | wc -l")))
+
+(defvar epe-git-status
+  "git status --porcelain -b 2> /dev/null")
+
+(defun epe-git-p-helper (command)
+  (not
+   (string=
+    (shell-command-to-string command) "")))
+
+(defun epe-git-untracked-p ()
+  (epe-git-p-helper (concat epe-git-status " | grep '^\?\? '")))
+
+(defun epe-git-added-p ()
+  (or (epe-git-p-helper (concat epe-git-status " | grep '^A '"))
+      (epe-git-p-helper (concat epe-git-status " | grep '^M '"))))
+
+(defun epe-git-modified-p ()
+  (or (epe-git-p-helper (concat epe-git-status " | grep '^ M '"))
+      (epe-git-p-helper (concat epe-git-status " | grep '^AM '"))
+      (epe-git-p-helper (concat epe-git-status " | grep '^ T '"))))
+
+(defun epe-git-renamed-p ()
+  (epe-git-p-helper (concat epe-git-status " | grep '^R '")))
+
+(defun epe-git-deleted-p ()
+  (or (epe-git-p-helper (concat epe-git-status " | grep '^ D '"))
+      (epe-git-p-helper (concat epe-git-status " | grep '^D '"))
+      (epe-git-p-helper (concat epe-git-status " | grep '^AD '"))))
+
+(defun epe-git-unmerged-p ()
+  (epe-git-p-helper (concat epe-git-status " | grep '^UU '")))
+
+(defun epe-git-ahead-p ()
+  (epe-git-p-helper (concat epe-git-status " | grep '^## .*ahead'")))
+
+(defun epe-git-behind-p ()
+  (epe-git-p-helper (concat epe-git-status " | grep '^## .*behind'")))
+
+(defun epe-git-diverged-p ()
+  (epe-git-p-helper (concat epe-git-status " | grep '^## .*deverged'")))
 
 
 ;; An example theme. Please post your theme here if you want.
