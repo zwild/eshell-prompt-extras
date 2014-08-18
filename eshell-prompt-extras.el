@@ -3,7 +3,7 @@
 ;; Copyright (C) 2014 Wei Zhao
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
 ;; Git: https://github.com/kaihaosw/eshell-prompt-extras.git
-;; Version: 0.71
+;; Version: 0.72
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
 
@@ -184,8 +184,7 @@
 ;;       eshell-highlight-prompt nil
 ;;       eshell-prompt-function 'epe-theme-lambda)
 (defun epe-theme-lambda ()
-  "A eshell-prompt lambda theme. Using this theme,
-please set eshell-prompt-regexp with '^[^#\n|]*[#|] ' "
+  "A eshell-prompt lambda theme."
   (concat
    (when (epe-remote-p)
      (epe-colorize-with-face
@@ -206,6 +205,28 @@ please set eshell-prompt-regexp with '^[^#\n|]*[#|] ' "
        'font-lock-constant-face)))
    (epe-colorize-with-face " λ" 'eshell-ls-unreadable-face)
    (epe-colorize-with-face (if (= (user-uid) 0) "#" "|") 'eshell-ls-unreadable-face)
+   " "))
+
+;; (setq eshell-prompt-regexp "^[^#$\n]*[#$] "
+;;       eshell-highlight-prompt nil
+;;       eshell-prompt-function 'epe-theme-geoffgarside)
+(defun epe-theme-geoffgarside ()
+  "A eshell-prompt theme from oh-my-zsh."
+  (concat
+   (epe-colorize-with-face
+    (concat "[" (epe-date-time "%T") "] ") 'font-lock-comment-face)
+   (epe-colorize-with-face
+    (epe-user-name) 'font-lock-builtin-face)
+   (epe-colorize-with-face
+    ":" 'font-lock-comment-face)
+   (epe-colorize-with-face
+    (epe-abbrev-dir-name (eshell/pwd)) 'font-lock-function-name-face)
+   " "
+   (when (epe-git-p)
+     (epe-colorize
+      (format "git:(%s) %s)" (epe-git-branch) (epe-git-dirty)) "#ffa500"))
+   (epe-colorize-with-face
+    (if (= (user-uid) 0) " #" " $") 'eshell-ls-unreadable-face)
    " "))
 
 (provide 'eshell-prompt-extras)
