@@ -41,3 +41,8 @@ If you want to display python virtual environment information.
         (setq eshell-prompt-regexp "^[^#\n|]*[#|] "
              eshell-highlight-prompt nil
              eshell-prompt-function 'epe-theme-lambda))))
+
+Screenshot
+----------
+
+![picture of eshell-prompt-extras](https://raw.githubusercontent.com/kaihaosw/eshell-prompt-extras/master/screenshot.png)
