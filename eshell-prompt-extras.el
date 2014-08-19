@@ -247,8 +247,12 @@
         'font-lock-comment-face))
      (when (fboundp 'epe-venv-p)
        (when (epe-venv-p)
-         (epe-colorize-with-face (concat "(" venv-current-name ") ") 'font-lock-comment-face)))
-     (epe-colorize-with-face (shrink-paths (split-string (pwd-repl-home (eshell/pwd)) "/"))
+         (epe-colorize-with-face (concat "(" venv-current-name ") ")
+                                 'font-lock-comment-face)))
+     (epe-colorize-with-face (funcall
+                              shrink-paths
+                              (split-string
+                               (funcall pwd-repl-home (eshell/pwd)) "/"))
                              'eshell-ls-directory-face)
      (when (epe-git-p)
        (concat
@@ -288,4 +292,3 @@
 (provide 'eshell-prompt-extras)
 
 ;;; eshell-prompt-extras.el ends here
-
