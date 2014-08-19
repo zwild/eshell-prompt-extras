@@ -177,14 +177,15 @@
 (defun epe-git-diverged-p ()
   (epe-git-p-helper (concat epe-git-status " | grep '^## .*deverged'")))
 
+;;; Themes
+;; Please post your theme here if you want.
+;; Each theme should correctly set `eshell-prompt-regexp'
 
-;; An example theme. Please post your theme here if you want.
-
-;; (setq eshell-prompt-regexp "^[^#\n|]*[#|] "
-;;       eshell-highlight-prompt nil
+;; (setq eshell-highlight-prompt nil
 ;;       eshell-prompt-function 'epe-theme-lambda)
 (defun epe-theme-lambda ()
   "A eshell-prompt lambda theme."
+  (setq eshell-prompt-regexp "^[^#\n|]*[#|] ")
   (concat
    (when (epe-remote-p)
      (epe-colorize-with-face
@@ -207,11 +208,11 @@
    (epe-colorize-with-face (if (= (user-uid) 0) "#" "|") 'eshell-ls-unreadable-face)
    " "))
 
-;; (setq eshell-prompt-regexp "^[^#$\n]*[#$] "
-;;       eshell-highlight-prompt nil
+;; (setq eshell-highlight-prompt nil
 ;;       eshell-prompt-function 'epe-theme-geoffgarside)
 (defun epe-theme-geoffgarside ()
   "A eshell-prompt theme from oh-my-zsh."
+  (setq eshell-prompt-regexp "^[^#$\n]*[#$] ")
   (concat
    (epe-colorize-with-face
     (concat "[" (epe-date-time "%T") "] ") 'font-lock-comment-face)
