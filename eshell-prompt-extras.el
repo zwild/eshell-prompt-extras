@@ -214,6 +214,55 @@
    (epe-colorize-with-face (if (= (user-uid) 0) "#" "|") 'eshell-ls-unreadable-face)
    " "))
 
+(defun epe-theme-dakrone ()
+  "A eshell-prompt lambda theme with directory shrinking."
+  (setq eshell-prompt-regexp "^[^#\n|]*[#|] ")
+  (let* ((pwd-repl-home (lambda (pwd)
+                          (let* ((home (expand-file-name (getenv "HOME")))
+                                 (home-len (length home)))
+                            (if (and
+                                 (>= (length pwd) home-len)
+                                 (equal home (substring pwd 0 home-len)))
+                                (concat "~" (substring pwd home-len))
+                              pwd))))
+         (shrink-paths (lambda (p-lst)
+                         (if (> (length p-lst) 3) ;; shrink paths deeper than 3 dirs
+                             (concat
+                              (mapconcat (lambda (elm)
+                                           (if (zerop (length elm)) ""
+                                             (substring elm 0 1)))
+                                         (butlast p-lst 3)
+                                         "/")
+                              "/"
+                              (mapconcat (lambda (elm) elm)
+                                         (last p-lst 3)
+                                         "/"))
+                           (mapconcat (lambda (elm) elm)
+                                      p-lst
+                                      "/")))))
+    (concat
+     (when (epe-remote-p)
+       (epe-colorize-with-face
+        (concat (epe-remote-user) "@" (epe-remote-host) " ")
+        'font-lock-comment-face))
+     (when (fboundp 'epe-venv-p)
+       (when (epe-venv-p)
+         (epe-colorize-with-face (concat "(" venv-current-name ") ") 'font-lock-comment-face)))
+     (epe-colorize-with-face (shrink-paths (split-string (pwd-repl-home (eshell/pwd)) "/"))
+                             'eshell-ls-directory-face)
+     (when (epe-git-p)
+       (concat
+        (epe-colorize-with-face ":" 'eshell-ls-directory-face)
+        (epe-colorize-with-face
+         (concat (epe-git-branch)
+                 (epe-git-dirty)
+                 (unless (= (epe-git-unpushed-number) 0)
+                   (concat ":" (number-to-string (epe-git-unpushed-number)))))
+         'font-lock-constant-face)))
+     (epe-colorize-with-face " λ" 'eshell-ls-unreadable-face)
+     (epe-colorize-with-face (if (= (user-uid) 0) "#" "|") 'eshell-ls-unreadable-face)
+     " ")))
+
 ;; (setq eshell-highlight-prompt nil
 ;;       eshell-prompt-function 'epe-theme-geoffgarside)
 (defun epe-theme-geoffgarside ()
