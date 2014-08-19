@@ -3,7 +3,7 @@
 ;; Copyright (C) 2014 Wei Zhao
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
 ;; Git: https://github.com/kaihaosw/eshell-prompt-extras.git
-;; Version: 0.72
+;; Version: 0.8
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
 
@@ -46,8 +46,7 @@
 ;; (eval-after-load 'esh-opt
 ;;   (progn
 ;;     (require 'eshell-prompt-extras)
-;;     (setq eshell-prompt-regexp "^[^#\n|]*[#|] "
-;;           eshell-highlight-prompt nil
+;;     (setq eshell-highlight-prompt nil
 ;;           eshell-prompt-function 'epe-theme-lambda)))
 ;; If you want to display python virtual environment information:
 ;; (eval-after-load 'esh-opt
@@ -55,8 +54,7 @@
 ;;     (require 'virtualenvwrapper)
 ;;     (venv-initialize-eshell)
 ;;     (require 'eshell-prompt-extras)
-;;     (setq eshell-prompt-regexp "^[^#\n|]*[#|] "
-;;           eshell-highlight-prompt nil
+;;     (setq eshell-highlight-prompt nil
 ;;           eshell-prompt-function 'epe-theme-lambda)))
 
 ;;; Code:
@@ -138,7 +136,7 @@
   "Return if your git is 'dirty'."
   (if (string-match "dirty"
                     (shell-command-to-string "git diff-index --quiet HEAD -- || echo -n 'dirty'"))
-       epe-git-dirty-char ""))
+      epe-git-dirty-char ""))
 
 (defun epe-git-unpushed-number ()
   "Return unpushed number."

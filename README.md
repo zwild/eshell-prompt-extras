@@ -27,9 +27,8 @@ Usage
     (eval-after-load 'esh-opt
       (progn
         (require 'eshell-prompt-extras)
-        (setq eshell-prompt-regexp "^[^#\n|]*[#|] "
-             eshell-highlight-prompt nil
-             eshell-prompt-function 'epe-theme-lambda)))
+        (setq eshell-highlight-prompt nil
+              eshell-prompt-function 'epe-theme-lambda)))
 
 If you want to display python virtual environment information.
 
@@ -38,9 +37,8 @@ If you want to display python virtual environment information.
         (require 'virtualenvwrapper)
         (venv-initialize-eshell)
         (require 'eshell-prompt-extras)
-        (setq eshell-prompt-regexp "^[^#\n|]*[#|] "
-             eshell-highlight-prompt nil
-             eshell-prompt-function 'epe-theme-lambda))))
+        (setq eshell-highlight-prompt nil
+              eshell-prompt-function 'epe-theme-lambda))))
 
 Screenshot
 ----------
