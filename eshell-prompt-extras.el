@@ -70,6 +70,14 @@
     (and (eshell-search-path "virtualenvwrapper.sh")
          venv-current-name)))
 
+(defgroup epe nil
+  "Eshell extras")
+
+(defcustom epe-git-dirty-char "*"
+  "Character to show for a changed git repository"
+  :group 'epe
+  :type 'string)
+
 ;; (epe-colorize "abc" "red")
 (defmacro epe-colorize (str color)
   `(propertize ,str 'face '(:foreground ,color)))
@@ -121,16 +129,16 @@
 
 (defun epe-git-branch ()
   "Return your git branch name."
-  (let ((name (shell-command-to-string "git branch | grep \\* | awk '{print $2}'")))
+  (let ((name (shell-command-to-string "git symbolic-ref HEAD | cut -d'/' -f3-10")))
     (if (> (length name) 0)
         (substring name 0 -1)
       "no-branch")))
 
 (defun epe-git-dirty ()
   "Return if your git is 'dirty'."
-  (if (string-match "nothing to commit.*clean"
-                    (shell-command-to-string "git status"))
-      "" "*"))
+  (if (string-match "dirty"
+                    (shell-command-to-string "git diff-index --quiet HEAD -- || echo -n 'dirty'"))
+       epe-git-dirty-char ""))
 
 (defun epe-git-unpushed-number ()
   "Return unpushed number."
