@@ -103,7 +103,7 @@
 
 (defun epe-date-time (&optional format)
   "Date time information."
-  (format-time-string (if format format "%Y-%m-%d %H:%M") (current-time)))
+  (format-time-string (or format "%Y-%m-%d %H:%M") (current-time)))
 
 
 ;; tramp info
@@ -183,12 +183,10 @@
 (defun epe-git-diverged-p ()
   (epe-git-p-helper (concat epe-git-status " | grep '^## .*deverged'")))
 
+
 ;;; Themes
 ;; Please post your theme here if you want.
 ;; Each theme should correctly set `eshell-prompt-regexp'
-
-;; (setq eshell-highlight-prompt nil
-;;       eshell-prompt-function 'epe-theme-lambda)
 (defun epe-theme-lambda ()
   "A eshell-prompt lambda theme."
   (setq eshell-prompt-regexp "^[^#\n|]*[#|] ")
@@ -267,8 +265,6 @@
      (epe-colorize-with-face (if (= (user-uid) 0) "#" "|") 'eshell-ls-unreadable-face)
      " ")))
 
-;; (setq eshell-highlight-prompt nil
-;;       eshell-prompt-function 'epe-theme-geoffgarside)
 (defun epe-theme-geoffgarside ()
   "A eshell-prompt theme from oh-my-zsh."
   (setq eshell-prompt-regexp "^[^#$\n]*[#$] ")
