@@ -3,7 +3,7 @@
 ;; Copyright (C) 2014 Wei Zhao
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
 ;; Git: https://github.com/kaihaosw/eshell-prompt-extras.git
-;; Version: 0.8
+;; Version: 0.8.1
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
 
@@ -189,7 +189,7 @@
 ;; Each theme should correctly set `eshell-prompt-regexp'
 (defun epe-theme-lambda ()
   "A eshell-prompt lambda theme."
-  (setq eshell-prompt-regexp "^[^#\n|]*[#|] ")
+  (setq eshell-prompt-regexp "^[^#\nλ]*[#λ] ")
   (concat
    (when (epe-remote-p)
      (epe-colorize-with-face
@@ -209,7 +209,7 @@
                  (concat ":" (number-to-string (epe-git-unpushed-number)))))
        'font-lock-constant-face)))
    (epe-colorize-with-face " λ" 'eshell-ls-unreadable-face)
-   (epe-colorize-with-face (if (= (user-uid) 0) "#" "|") 'eshell-ls-unreadable-face)
+   (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'eshell-ls-unreadable-face)
    " "))
 
 (defun epe-theme-dakrone ()
