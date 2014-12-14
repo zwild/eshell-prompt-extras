@@ -3,7 +3,8 @@
 ;; Copyright (C) 2014 Wei Zhao
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
 ;; Git: https://github.com/kaihaosw/eshell-prompt-extras.git
-;; Version: 0.8.1
+;; Contributors: Lee Hinman
+;; Version: 0.9
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
 
@@ -155,9 +156,7 @@
   "git status --porcelain -b 2> /dev/null")
 
 (defun epe-git-p-helper (command)
-  (not
-   (string=
-    (shell-command-to-string command) "")))
+  (not (string= (shell-command-to-string command) "")))
 
 (defun epe-git-untracked-p ()
   (epe-git-p-helper (concat epe-git-status " | grep '^\?\? '")))
@@ -267,6 +266,7 @@
         (epe-colorize-with-face
          (concat (epe-git-branch)
                  (epe-git-dirty)
+                 (epe-git-untracked)
                  (unless (= (epe-git-unpushed-number) 0)
                    (concat ":" (number-to-string (epe-git-unpushed-number)))))
          'font-lock-constant-face)))
