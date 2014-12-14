@@ -76,6 +76,11 @@
   :group 'epe
   :type 'string)
 
+(defcustom epe-git-untracked-char "?"
+  "Character to show for an untracked file in the git repository"
+  :group 'epe
+  :type 'string)
+
 ;; (epe-colorize "abc" "red")
 (defmacro epe-colorize (str color)
   `(propertize ,str 'face '(:foreground ,color)))
@@ -143,6 +148,9 @@
   (string-to-number
    (shell-command-to-string "git log @{u}.. --oneline 2> /dev/null | wc -l")))
 
+(defun epe-git-untracked ()
+  (and (epe-git-untracked-p) epe-git-untracked-char))
+
 (defvar epe-git-status
   "git status --porcelain -b 2> /dev/null")
 
@@ -205,6 +213,7 @@
       (epe-colorize-with-face
        (concat (epe-git-branch)
                (epe-git-dirty)
+               (epe-git-untracked)
                (unless (= (epe-git-unpushed-number) 0)
                  (concat ":" (number-to-string (epe-git-unpushed-number)))))
        'font-lock-constant-face)))
