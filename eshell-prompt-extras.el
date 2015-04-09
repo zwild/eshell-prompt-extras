@@ -98,7 +98,7 @@
   "Return the base directory name."
   (if (string= dir (getenv "HOME"))
       "~"
-    (let ((dirname (eshell/basename dir)))
+    (let ((dirname (file-name-nondirectory dir)))
       (if (string= dirname "") "/" dirname))))
 
 (defun epe-user-name ()
