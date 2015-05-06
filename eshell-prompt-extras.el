@@ -82,6 +82,11 @@
   :group 'epe
   :type 'string)
 
+(defcustom epe-git-detached-HEAD-char "D:"
+  "Character to show for an detached HEAD in the git repository"
+  :group 'epe
+  :type 'string)
+
 ;; (epe-colorize "abc" "red")
 (defmacro epe-colorize (str color)
   `(propertize ,str 'face '(:foreground ,color)))
@@ -131,12 +136,15 @@
   (and (eshell-search-path "git")
        (locate-dominating-file (eshell/pwd) ".git")))
 
+(defun epe-git-short-sha1 ()
+  (substring (shell-command-to-string "git rev-parse --short HEAD") 0 -1))
+
 (defun epe-git-branch ()
   "Return your git branch name."
-  (let ((name (shell-command-to-string "git symbolic-ref HEAD | cut -d'/' -f3-10")))
-    (if (> (length name) 0)
-        (substring name 0 -1)
-      "no-branch")))
+  (let ((name (shell-command-to-string "git symbolic-ref HEAD --short || echo -n 'detached'")))
+    (if (string-match "detached" name)
+        (concat epe-git-detached-HEAD-char (epe-git-short-sha1))
+      (substring name 0 -1))))
 
 (defun epe-git-dirty ()
   "Return if your git is 'dirty'."
