@@ -67,7 +67,8 @@
   (defun epe-venv-p ()
     "If you are `workon'ing some virtual environment."
     (and (eshell-search-path "virtualenvwrapper.sh")
-         venv-current-name)))
+         venv-current-name
+         (string-match venv-location (eshell-search-path "python")))))
 
 (defgroup epe nil
   "Eshell extras")
