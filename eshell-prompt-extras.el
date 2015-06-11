@@ -2,9 +2,9 @@
 
 ;; Copyright (C) 2014 Wei Zhao
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
-;; Git: https://github.com/kaihaosw/eshell-prompt-extras.git
+;; Git: https://github.com/hiddenlotus/eshell-prompt-extras
 ;; Contributors: Lee Hinman
-;; Version: 0.9
+;; Version: 0.92
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
 
@@ -211,7 +211,7 @@
       (concat (epe-remote-user) "@" (epe-remote-host) " ")
       'font-lock-comment-face))
    (when (fboundp 'epe-venv-p)
-     (when (epe-venv-p)
+     (when (and (epe-venv-p) venv-current-name)
        (epe-colorize-with-face (concat "(" venv-current-name ") ") 'font-lock-comment-face)))
    (epe-colorize-with-face (epe-abbrev-dir-name (eshell/pwd)) 'eshell-ls-directory-face)
    (when (epe-git-p)
