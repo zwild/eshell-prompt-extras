@@ -24,9 +24,11 @@ You could install it by `M-x`: with
 
 Usage
 -----
+before emacs24.4
+
     (eval-after-load 'esh-opt
       (progn
-        (require 'eshell-prompt-extras)
+        (autoload 'epe-theme-lambda "eshell-prompt-extras")
         (setq eshell-highlight-prompt nil
               eshell-prompt-function 'epe-theme-lambda)))
 
@@ -36,9 +38,46 @@ If you want to display python virtual environment information.
       (progn
         (require 'virtualenvwrapper)
         (venv-initialize-eshell)
-        (require 'eshell-prompt-extras)
+        (autoload 'epe-theme-lambda "eshell-prompt-extras")
         (setq eshell-highlight-prompt nil
               eshell-prompt-function 'epe-theme-lambda))))
+
+after emacs24.4
+
+    (with-eval-after-load "esh-opt"
+      (autoload 'epe-theme-lambda "eshell-prompt-extras")
+      (setq eshell-highlight-prompt nil
+            eshell-prompt-function 'epe-theme-lambda))
+
+If you want to display python virtual environment information:
+
+    (with-eval-after-load "esh-opt"
+      (require 'virtualenvwrapper)
+      (venv-initialize-eshell)
+      (autoload 'epe-theme-lambda "eshell-prompt-extras")
+      (setq eshell-highlight-prompt nil
+            eshell-prompt-function 'epe-theme-lambda))
+
+Themes
+------
+epe-theme-lambda  
+epe-theme-dakrone
+
+Custom Variables
+----------------
+epe-show-python-info  
+epe-git-dirty-char  
+epe-git-untracked-char  
+epe-git-detached-HEAD-char
+
+Faces
+-----
+epe-remote-face  
+epe-venv-face  
+epe-dir-face  
+epe-git-face  
+epe-symbol-face  
+epe-sudo-symbol-face
 
 Screenshot
 ----------

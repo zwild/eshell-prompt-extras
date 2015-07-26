@@ -4,7 +4,7 @@
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
 ;; Git: https://github.com/hiddenlotus/eshell-prompt-extras
 ;; Contributors: Lee Hinman
-;; Version: 0.92
+;; Version: 0.96
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
 
@@ -44,19 +44,35 @@
 ;; package-install: eshell-prompt-extras.
 
 ;; Usage
+;; before emacs24.4
 ;; (eval-after-load 'esh-opt
 ;;   (progn
-;;     (require 'eshell-prompt-extras)
+;;     (autoload 'epe-theme-lambda "eshell-prompt-extras")
 ;;     (setq eshell-highlight-prompt nil
 ;;           eshell-prompt-function 'epe-theme-lambda)))
+;;
 ;; If you want to display python virtual environment information:
 ;; (eval-after-load 'esh-opt
 ;;   (progn
 ;;     (require 'virtualenvwrapper)
 ;;     (venv-initialize-eshell)
-;;     (require 'eshell-prompt-extras)
+;;     (autoload 'epe-theme-lambda "eshell-prompt-extras")
 ;;     (setq eshell-highlight-prompt nil
 ;;           eshell-prompt-function 'epe-theme-lambda)))
+
+;; after emacs24.4
+;; (with-eval-after-load "esh-opt"
+;;   (autoload 'epe-theme-lambda "eshell-prompt-extras")
+;;   (setq eshell-highlight-prompt nil
+;;         eshell-prompt-function 'epe-theme-lambda))
+;;
+;; If you want to display python virtual environment information:
+;; (with-eval-after-load "esh-opt"
+;;   (require 'virtualenvwrapper)
+;;   (venv-initialize-eshell)
+;;   (autoload 'epe-theme-lambda "eshell-prompt-extras")
+;;   (setq eshell-highlight-prompt nil
+;;         eshell-prompt-function 'epe-theme-lambda))
 
 ;;; Code:
 (require 'em-ls)
@@ -71,6 +87,11 @@
 
 (defgroup epe nil
   "Eshell extras")
+
+(defcustom epe-show-python-info t
+  "non nil will show python info."
+  :group 'epe
+  :type 'boolean)
 
 (defcustom epe-git-dirty-char "*"
   "Character to show for a changed git repository"
@@ -87,17 +108,41 @@
   :group 'epe
   :type 'string)
 
-;; (epe-colorize "abc" "red")
-(defmacro epe-colorize (str color)
-  `(propertize ,str 'face '(:foreground ,color)))
+(defface epe-remote-face
+  '((t (:inherit font-lock-comment-face)))
+  "Face of remote info in prompt."
+  :group 'epe)
 
+(defface epe-venv-face
+  '((t (:inherit font-lock-comment-face)))
+  "Face of python virtual environment info in prompt."
+  :group 'epe)
+
+(defface epe-dir-face
+  '((t (:inherit eshell-ls-directory-face)))
+  "Face of directory in prompt."
+  :group 'epe)
+
+(defface epe-git-face
+  '((t (:inherit font-lock-constant-face)))
+  "Face of git info in prompt."
+  :group 'epe)
+
+(defface epe-symbol-face
+  '((t (:inherit eshell-ls-unreadable-face)))
+  "Face of your symbol in prompt."
+  :group 'epe)
+
+(defface epe-sudo-symbol-face
+  '((t (:inherit eshell-ls-unreadable-face)))
+  "Face of your sudo symbol in prompt."
+  :group 'epe)
+
+
+;; help definations
 ;; (epe-colorize-with-face "abc" 'font-lock-comment-face)
 (defmacro epe-colorize-with-face (str face)
   `(propertize ,str 'face ,face))
-
-;; (epe-colorize-with-properties "abc" :foreground "red" :backgroud "black")
-(defmacro epe-colorize-with-properties (str &rest properties)
-  `(propertize ,str 'face (list ,@properties)))
 
 (defun epe-abbrev-dir-name (dir)
   "Return the base directory name."
@@ -209,28 +254,29 @@
    (when (epe-remote-p)
      (epe-colorize-with-face
       (concat (epe-remote-user) "@" (epe-remote-host) " ")
-      'font-lock-comment-face))
-   (when (fboundp 'epe-venv-p)
-     (when (and (epe-venv-p) venv-current-name)
-       (epe-colorize-with-face (concat "(" venv-current-name ") ") 'font-lock-comment-face)))
-   (epe-colorize-with-face (epe-abbrev-dir-name (eshell/pwd)) 'eshell-ls-directory-face)
+      'epe-remote-face))
+   (when epe-show-python-info
+     (when (fboundp 'epe-venv-p)
+       (when (and (epe-venv-p) venv-current-name)
+         (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face))))
+   (epe-colorize-with-face (epe-abbrev-dir-name (eshell/pwd)) 'epe-dir-face)
    (when (epe-git-p)
      (concat
-      (epe-colorize-with-face ":" 'eshell-ls-directory-face)
+      (epe-colorize-with-face ":" 'epe-dir-face)
       (epe-colorize-with-face
        (concat (epe-git-branch)
                (epe-git-dirty)
                (epe-git-untracked)
                (unless (= (epe-git-unpushed-number) 0)
                  (concat ":" (number-to-string (epe-git-unpushed-number)))))
-       'font-lock-constant-face)))
-   (epe-colorize-with-face " λ" 'eshell-ls-unreadable-face)
-   (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'eshell-ls-unreadable-face)
+       'epe-git-face)))
+   (epe-colorize-with-face " λ" 'epe-symbol-face)
+   (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
    " "))
 
 (defun epe-theme-dakrone ()
   "A eshell-prompt lambda theme with directory shrinking."
-  (setq eshell-prompt-regexp "^[^#\n|]*[#|] ")
+  (setq eshell-prompt-regexp "^[^#\nλ]*[#λ] ")
   (let* ((pwd-repl-home (lambda (pwd)
                           (let* ((home (expand-file-name (getenv "HOME")))
                                  (home-len (length home)))
@@ -258,49 +304,29 @@
      (when (epe-remote-p)
        (epe-colorize-with-face
         (concat (epe-remote-user) "@" (epe-remote-host) " ")
-        'font-lock-comment-face))
-     (when (fboundp 'epe-venv-p)
-       (when (epe-venv-p)
-         (epe-colorize-with-face (concat "(" venv-current-name ") ")
-                                 'font-lock-comment-face)))
+        'epe-remote-face))
+     (when epe-show-python-info
+       (when (fboundp 'epe-venv-p)
+         (when (and (epe-venv-p) venv-current-name)
+           (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face))))
      (epe-colorize-with-face (funcall
                               shrink-paths
                               (split-string
                                (funcall pwd-repl-home (eshell/pwd)) "/"))
-                             'eshell-ls-directory-face)
+                             'epe-dir-face)
      (when (epe-git-p)
        (concat
-        (epe-colorize-with-face ":" 'eshell-ls-directory-face)
+        (epe-colorize-with-face ":" 'epe-dir-face)
         (epe-colorize-with-face
          (concat (epe-git-branch)
                  (epe-git-dirty)
                  (epe-git-untracked)
                  (unless (= (epe-git-unpushed-number) 0)
                    (concat ":" (number-to-string (epe-git-unpushed-number)))))
-         'font-lock-constant-face)))
-     (epe-colorize-with-face " λ" 'eshell-ls-unreadable-face)
-     (epe-colorize-with-face (if (= (user-uid) 0) "#" "|") 'eshell-ls-unreadable-face)
+         'epe-git-face)))
+     (epe-colorize-with-face " λ" 'epe-symbol-face)
+     (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
      " ")))
-
-(defun epe-theme-geoffgarside ()
-  "A eshell-prompt theme from oh-my-zsh."
-  (setq eshell-prompt-regexp "^[^#$\n]*[#$] ")
-  (concat
-   (epe-colorize-with-face
-    (concat "[" (epe-date-time "%T") "] ") 'font-lock-comment-face)
-   (epe-colorize-with-face
-    (epe-user-name) 'font-lock-builtin-face)
-   (epe-colorize-with-face
-    ":" 'font-lock-comment-face)
-   (epe-colorize-with-face
-    (epe-abbrev-dir-name (eshell/pwd)) 'font-lock-function-name-face)
-   " "
-   (when (epe-git-p)
-     (epe-colorize
-      (format "git:(%s) %s)" (epe-git-branch) (epe-git-dirty)) "#ffa500"))
-   (epe-colorize-with-face
-    (if (= (user-uid) 0) " #" " $") 'eshell-ls-unreadable-face)
-   " "))
 
 (provide 'eshell-prompt-extras)
 
