@@ -3,7 +3,7 @@ eshell-prompt-extras
 
 Display extra information and color for your eshell prompt.
 
-Introtuction
+Introduction
 ------------
 This library display remote user, remote host, python virtual  
 environment info, git branch, git dirty info and git unpushed number  
