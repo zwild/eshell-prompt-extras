@@ -86,7 +86,8 @@
          (string-match venv-location (eshell-search-path "python")))))
 
 (defgroup epe nil
-  "Eshell extras")
+  "Eshell extras"
+  :group 'eshell-prompt)
 
 (defcustom epe-show-python-info t
   "non nil will show python info."
