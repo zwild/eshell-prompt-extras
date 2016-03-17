@@ -109,6 +109,13 @@
   :group 'epe
   :type 'string)
 
+(defcustom epe-path-style 'fish
+  "Prompt path name style."
+  :group 'epe
+  :type '(choice (const :tag "fish-style-dir-name" fish)
+                 (const :tag "single-dir-name" single)
+                 (const :tag "full-path-name" full)))
+
 (defface epe-remote-face
   '((t (:inherit font-lock-comment-face)))
   "Face of remote info in prompt."
@@ -151,6 +158,32 @@
       "~"
     (let ((dirname (file-name-nondirectory dir)))
       (if (string= dirname "") "/" dirname))))
+
+;; https://www.emacswiki.org/emacs/EshellPrompt
+(defun epe-fish-path (path)
+  "Return a potentially trimmed-down version of the directory PATH, replacing
+parent directories with their initial characters to try to get the character
+length of PATH (sans directory slashes) down to MAX-LEN."
+  (let* ((components (split-string (abbreviate-file-name path) "/"))
+         (max-len 30)
+         (len (+ (1- (length components))
+                 (reduce '+ components :key 'length)))
+         (str ""))
+    (while (and (> len max-len)
+                (cdr components))
+      (setq str (concat str
+                        (cond ((= 0 (length (car components))) "/")
+                              ((= 1 (length (car components)))
+                               (concat (car components) "/"))
+                              (t
+                               (if (string= "."
+                                            (string (elt (car components) 0)))
+                                   (concat (substring (car components) 0 2)
+                                           "/")
+                                 (string (elt (car components) 0) ?/)))))
+            len (- len (1- (length (car components))))
+            components (cdr components)))
+    (concat str (reduce (lambda (a b) (concat a "/" b)) components))))
 
 (defun epe-user-name ()
   "User information."
@@ -260,7 +293,10 @@
      (when (fboundp 'epe-venv-p)
        (when (and (epe-venv-p) venv-current-name)
          (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face))))
-   (epe-colorize-with-face (epe-abbrev-dir-name (eshell/pwd)) 'epe-dir-face)
+   (let ((f (cond ((eq epe-path-style 'fish) 'epe-fish-path)
+                  ((eq epe-path-style 'single) 'epe-abbrev-dir-name)
+                  ((eq epe-path-style 'full) 'abbreviate-file-name))))
+     (epe-colorize-with-face (funcall f (eshell/pwd)) 'epe-dir-face))
    (when (epe-git-p)
      (concat
       (epe-colorize-with-face ":" 'epe-dir-face)

@@ -68,7 +68,8 @@ Custom Variables
 epe-show-python-info  
 epe-git-dirty-char  
 epe-git-untracked-char  
-epe-git-detached-HEAD-char
+epe-git-detached-HEAD-char  
+epe-path-style: fish, single or full
 
 Faces
 -----
