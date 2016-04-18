@@ -79,6 +79,9 @@
 (require 'em-dirs)
 (require 'esh-ext)
 (require 'tramp)
+(autoload 'vc-git-branches "vc-git")
+(autoload 'vc-find-root "vc-hooks")
+
 (when (require 'virtualenvwrapper nil t)
   (defun epe-venv-p ()
     "If you are `workon'ing some virtual environment."
@@ -213,21 +216,35 @@ length of PATH (sans directory slashes) down to MAX-LEN."
 
 
 ;; git info
+;; (defun epe-git-p ()
+;;   "If you installed git and in a git project."
+;;   (let ((command "git rev-parse --is-inside-work-tree 2> /dev/null"))
+;;     (and (eshell-search-path "git")
+;;          (string= "true" (epe-trim-newline (shell-command-to-string command))))))
+
 (defun epe-git-p ()
   "If you installed git and in a git project."
-  (let ((command "git rev-parse --is-inside-work-tree 2> /dev/null"))
-    (and (eshell-search-path "git")
-         (string= "true" (epe-trim-newline (shell-command-to-string command))))))
+  (and (eshell-search-path "git")
+       (vc-find-root (eshell/pwd) ".git")))
 
 (defun epe-git-short-sha1 ()
   (epe-trim-newline (shell-command-to-string "git rev-parse --short HEAD")))
 
+;; (defun epe-git-branch ()
+;;   "Return your git branch name."
+;;   (let ((name (shell-command-to-string "git symbolic-ref HEAD --short || echo -n 'detached'")))
+;;     (if (string-match "detached" name)
+;;         (concat epe-git-detached-HEAD-char (epe-git-short-sha1))
+;;       (epe-trim-newline name))))
+
 (defun epe-git-branch ()
   "Return your git branch name."
-  (let ((name (shell-command-to-string "git symbolic-ref HEAD --short || echo -n 'detached'")))
-    (if (string-match "detached" name)
-        (concat epe-git-detached-HEAD-char (epe-git-short-sha1))
-      (epe-trim-newline name))))
+  (let ((branch (car (vc-git-branches))))
+    (cond
+     ((null branch) "no-branch")
+     ((string-match "^(HEAD detached at \\([[:word:]]+\\)" branch)
+      (concat epe-git-detached-HEAD-char (match-string 1 branch)))
+     (t branch))))
 
 (defun epe-git-dirty ()
   "Return if your git is 'dirty'."
@@ -308,8 +325,9 @@ length of PATH (sans directory slashes) down to MAX-LEN."
        (concat (epe-git-branch)
                (epe-git-dirty)
                (epe-git-untracked)
-               (unless (= (epe-git-unpushed-number) 0)
-                 (concat ":" (number-to-string (epe-git-unpushed-number)))))
+               (let ((unpushed (epe-git-unpushed-number)))
+                 (unless (= unpushed 0)
+                   (concat ":" (number-to-string unpushed)))))
        'epe-git-face)))
    (epe-colorize-with-face " λ" 'epe-symbol-face)
    (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
