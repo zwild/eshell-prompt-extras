@@ -159,6 +159,9 @@
     (let ((dirname (file-name-nondirectory dir)))
       (if (string= dirname "") "/" dirname))))
 
+(defun epe-trim-newline (string)
+  (replace-regexp-in-string "\n$" "" string))
+
 ;; https://www.emacswiki.org/emacs/EshellPrompt
 (defun epe-fish-path (path)
   "Return a potentially trimmed-down version of the directory PATH, replacing
@@ -212,18 +215,19 @@ length of PATH (sans directory slashes) down to MAX-LEN."
 ;; git info
 (defun epe-git-p ()
   "If you installed git and in a git project."
-  (and (eshell-search-path "git")
-       (locate-dominating-file (eshell/pwd) ".git")))
+  (let ((command "git rev-parse --is-inside-work-tree 2> /dev/null"))
+    (and (eshell-search-path "git")
+         (string= "true" (epe-trim-newline (shell-command-to-string command))))))
 
 (defun epe-git-short-sha1 ()
-  (substring (shell-command-to-string "git rev-parse --short HEAD") 0 -1))
+  (epe-trim-newline (shell-command-to-string "git rev-parse --short HEAD")))
 
 (defun epe-git-branch ()
   "Return your git branch name."
   (let ((name (shell-command-to-string "git symbolic-ref HEAD --short || echo -n 'detached'")))
     (if (string-match "detached" name)
         (concat epe-git-detached-HEAD-char (epe-git-short-sha1))
-      (substring name 0 -1))))
+      (epe-trim-newline name))))
 
 (defun epe-git-dirty ()
   "Return if your git is 'dirty'."

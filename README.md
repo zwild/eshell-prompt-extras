@@ -60,25 +60,28 @@ If you want to display python virtual environment information:
 
 Themes
 ------
-epe-theme-lambda  
-epe-theme-dakrone
+
+    epe-theme-lambda  
+    epe-theme-dakrone
 
 Custom Variables
 ----------------
-epe-show-python-info  
-epe-git-dirty-char  
-epe-git-untracked-char  
-epe-git-detached-HEAD-char  
-epe-path-style: fish, single or full
+
+    epe-show-python-info (default t)  
+    epe-git-dirty-char (default *)  
+    epe-git-untracked-char (default ?)  
+    epe-git-detached-HEAD-char (default D:)  
+    epe-path-style: (options: fish, single or full. default fish)
 
 Faces
 -----
-epe-remote-face  
-epe-venv-face  
-epe-dir-face  
-epe-git-face  
-epe-symbol-face  
-epe-sudo-symbol-face
+
+    epe-remote-face  
+    epe-venv-face  
+    epe-dir-face  
+    epe-git-face  
+    epe-symbol-face  
+    epe-sudo-symbol-face
 
 Screenshot
 ----------
