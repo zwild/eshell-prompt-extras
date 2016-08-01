@@ -335,7 +335,7 @@ length of PATH (sans directory slashes) down to MAX-LEN."
 
 (defun epe-theme-dakrone ()
   "A eshell-prompt lambda theme with directory shrinking."
-  (setq eshell-prompt-regexp "^[^#\nλ]*[#λ] ")
+  (setq eshell-prompt-regexp "^[^#\nλ]* λ[#]* ")
   (let* ((pwd-repl-home (lambda (pwd)
                           (let* ((home (expand-file-name (getenv "HOME")))
                                  (home-len (length home)))
