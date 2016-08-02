@@ -79,6 +79,7 @@
 (require 'em-dirs)
 (require 'esh-ext)
 (require 'tramp)
+(autoload 'cl-reduce "cl-lib")
 (autoload 'vc-git-branches "vc-git")
 (autoload 'vc-find-root "vc-hooks")
 
@@ -173,7 +174,7 @@ length of PATH (sans directory slashes) down to MAX-LEN."
   (let* ((components (split-string (abbreviate-file-name path) "/"))
          (max-len 30)
          (len (+ (1- (length components))
-                 (reduce '+ components :key 'length)))
+                 (cl-reduce '+ components :key 'length)))
          (str ""))
     (while (and (> len max-len)
                 (cdr components))
@@ -189,7 +190,7 @@ length of PATH (sans directory slashes) down to MAX-LEN."
                                  (string (elt (car components) 0) ?/)))))
             len (- len (1- (length (car components))))
             components (cdr components)))
-    (concat str (reduce (lambda (a b) (concat a "/" b)) components))))
+    (concat str (cl-reduce (lambda (a b) (concat a "/" b)) components))))
 
 (defun epe-user-name ()
   "User information."
