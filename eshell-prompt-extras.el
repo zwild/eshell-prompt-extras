@@ -131,7 +131,9 @@
   :group 'epe)
 
 (defface epe-dir-face
-  '((t (:inherit eshell-ls-directory-face)))
+  `((t (:inherit ,(if (facep 'eshell-ls-directory)
+                      'eshell-ls-directory
+                    'eshell-ls-directory-face) )))
   "Face of directory in prompt."
   :group 'epe)
 
@@ -141,7 +143,9 @@
   :group 'epe)
 
 (defface epe-symbol-face
-  '((t (:inherit eshell-ls-unreadable-face)))
+  `((t (:inherit ,(if (facep 'eshell-ls-unreadable)
+                      'eshell-ls-unreadable
+                    'eshell-ls-unreadable-face))))
   "Face of your symbol in prompt."
   :group 'epe)
 
