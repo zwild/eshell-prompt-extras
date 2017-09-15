@@ -236,7 +236,11 @@ length of PATH (sans directory slashes) down to MAX-LEN."
 
 (defun epe-remote-host ()
   "Return remote host."
-  (tramp-file-name-real-host (tramp-dissect-file-name default-directory)))
+  ;; `tramp-file-name-real-host' is removed and replaced by
+  ;; `tramp-file-name-host' in Emacs 26, see issue #18
+  (if (fboundp 'tramp-file-name-real-host)
+      (tramp-file-name-host (tramp-dissect-file-name default-directory))
+    (tramp-file-name-host (tramp-dissect-file-name default-directory))))
 
 
 ;; git info
