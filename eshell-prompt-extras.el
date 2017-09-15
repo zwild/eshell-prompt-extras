@@ -1,9 +1,11 @@
 ;;; eshell-prompt-extras.el --- Display extra information for your eshell prompt.
 
-;; Copyright (C) 2014 Wei Zhao
+;; Copyright (C) 2014-2016 Wei Zhao
+
 ;; Author: Wei Zhao <kaihaosw@gmail.com>
-;; Git: https://github.com/hiddenlotus/eshell-prompt-extras
 ;; Contributors: Lee Hinman
+;; Maintainer: Chunyang Xu <mail@xuchunyang.me>
+;; URL: https://github.com/hiddenlotus/eshell-prompt-extras
 ;; Version: 0.96
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
