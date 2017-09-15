@@ -1,5 +1,7 @@
 eshell-prompt-extras
 ====================
+[![MELPA](https://melpa.org/packages/eshell-prompt-extras-badge.svg)](https://melpa.org/#/eshell-prompt-extras)
+[![MELPA Stable](https://stable.melpa.org/packages/eshell-prompt-extras-badge.svg)](https://stable.melpa.org/#/eshell-prompt-extras)
 
 Display extra information and color for your eshell prompt.
 
