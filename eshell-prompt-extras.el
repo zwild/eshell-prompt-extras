@@ -254,8 +254,9 @@ length of PATH (sans directory slashes) down to MAX-LEN."
 
 (defun epe-git-p ()
   "If you installed git and in a git project."
-  (and (eshell-search-path "git")
-       (vc-find-root (eshell/pwd) ".git")))
+  (unless (epe-remote-p)                ; Work-around for issue #20
+    (and (eshell-search-path "git")
+         (vc-find-root (eshell/pwd) ".git"))))
 
 (defun epe-git-short-sha1 ()
   (epe-trim-newline (shell-command-to-string "git rev-parse --short HEAD")))
