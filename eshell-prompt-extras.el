@@ -85,12 +85,6 @@
 (autoload 'vc-git-branches "vc-git")
 (autoload 'vc-find-root "vc-hooks")
 
-(when (require 'virtualenvwrapper nil t)
-  (defun epe-venv-p ()
-    "If you are `workon'ing some virtual environment."
-    (and (eshell-search-path "virtualenvwrapper.sh")
-         (string-match venv-location (eshell-search-path "python")))))
-
 (defgroup epe nil
   "Eshell extras"
   :group 'eshell-prompt)
@@ -342,9 +336,8 @@ length of PATH (sans directory slashes) down to MAX-LEN."
       (concat (epe-remote-user) "@" (epe-remote-host) " ")
       'epe-remote-face))
    (when epe-show-python-info
-     (when (fboundp 'epe-venv-p)
-       (when (and (epe-venv-p) venv-current-name)
-         (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face))))
+     (when (and (boundp 'venv-current-name) venv-current-name)
+       (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face)))
    (let ((f (cond ((eq epe-path-style 'fish) 'epe-fish-path)
                   ((eq epe-path-style 'single) 'epe-abbrev-dir-name)
                   ((eq epe-path-style 'full) 'abbreviate-file-name))))
@@ -396,9 +389,8 @@ length of PATH (sans directory slashes) down to MAX-LEN."
         (concat (epe-remote-user) "@" (epe-remote-host) " ")
         'epe-remote-face))
      (when epe-show-python-info
-       (when (fboundp 'epe-venv-p)
-         (when (and (epe-venv-p) venv-current-name)
-           (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face))))
+       (when (and (boundp 'venv-current-name) venv-current-name)
+         (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face)))
      (epe-colorize-with-face (funcall
                               shrink-paths
                               (split-string
@@ -446,9 +438,8 @@ length of PATH (sans directory slashes) down to MAX-LEN."
     (epe-colorize-with-face "└─>" 'epe-pipeline-delimiter-face)
     )
    (when epe-show-python-info
-     (when (fboundp 'epe-venv-p)
-       (when (and (epe-venv-p) venv-current-name)
-	 (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face))))
+     (when (and (boundp 'venv-current-name) venv-current-name)
+       (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face)))
    (when (epe-git-p)
      (concat
       (epe-colorize-with-face ":" 'epe-dir-face)
