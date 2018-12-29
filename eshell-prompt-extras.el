@@ -1,11 +1,11 @@
 ;;; eshell-prompt-extras.el --- Display extra information for your eshell prompt.
 
-;; Copyright (C) 2014-2016 Wei Zhao
+;; Copyright (C) 2014-2019 Wei Zhao
 
-;; Author: Wei Zhao <kaihaosw@gmail.com>
+;; Author: zwild <judezhao@outlook.com>
 ;; Contributors: Lee Hinman
 ;; Maintainer: Chunyang Xu <mail@xuchunyang.me>
-;; URL: https://github.com/hiddenlotus/eshell-prompt-extras
+;; URL: https://github.com/zwild/eshell-prompt-extras
 ;; Version: 0.96
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
@@ -413,27 +413,24 @@ length of PATH (sans directory slashes) down to MAX-LEN."
   (concat
    (if (epe-remote-p)
        (progn
-	 (concat
-	  (epe-colorize-with-face "┌─[" 'epe-pipeline-delimiter-face)
-	  (epe-colorize-with-face (epe-remote-user) 'epe-pipeline-user-face)
-	  (epe-colorize-with-face "@" 'epe-pipeline-delimiter-face)
-	  (epe-colorize-with-face (epe-remote-host) 'epe-pipeline-host-face))
-	 )
+	     (concat
+	      (epe-colorize-with-face "┌─[" 'epe-pipeline-delimiter-face)
+	      (epe-colorize-with-face (epe-remote-user) 'epe-pipeline-user-face)
+	      (epe-colorize-with-face "@" 'epe-pipeline-delimiter-face)
+	      (epe-colorize-with-face (epe-remote-host) 'epe-pipeline-host-face)))
      (progn
        (concat
-	(epe-colorize-with-face "┌─[" 'epe-pipeline-delimiter-face)
-	(epe-colorize-with-face (user-login-name) 'epe-pipeline-user-face)
-	(epe-colorize-with-face "@" 'epe-pipeline-delimiter-face)
-	(epe-colorize-with-face (system-name) 'epe-pipeline-host-face)))
-     )
+	    (epe-colorize-with-face "┌─[" 'epe-pipeline-delimiter-face)
+	    (epe-colorize-with-face (user-login-name) 'epe-pipeline-user-face)
+	    (epe-colorize-with-face "@" 'epe-pipeline-delimiter-face)
+	    (epe-colorize-with-face (system-name) 'epe-pipeline-host-face))))
    (concat
     (epe-colorize-with-face "]──[" 'epe-pipeline-delimiter-face)
     (epe-colorize-with-face (format-time-string "%H:%M" (current-time)) 'epe-pipeline-time-face)
     (epe-colorize-with-face "]──[" 'epe-pipeline-delimiter-face)
     (epe-colorize-with-face (concat (eshell/pwd)) 'epe-dir-face)
     (epe-colorize-with-face  "]\n" 'epe-pipeline-delimiter-face)
-    (epe-colorize-with-face "└─>" 'epe-pipeline-delimiter-face)
-    )
+    (epe-colorize-with-face "└─>" 'epe-pipeline-delimiter-face))
    (when (and epe-show-python-info (bound-and-true-p venv-current-name))
      (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face))
    (when (epe-git-p)
@@ -441,15 +438,16 @@ length of PATH (sans directory slashes) down to MAX-LEN."
       (epe-colorize-with-face ":" 'epe-dir-face)
       (epe-colorize-with-face
        (concat (epe-git-branch)
-	       (epe-git-dirty)
-	       (epe-git-untracked)
-	       (let ((unpushed (epe-git-unpushed-number)))
-		 (unless (= unpushed 0)
-		   (concat ":" (number-to-string unpushed)))))
+	           (epe-git-dirty)
+	           (epe-git-untracked)
+	           (let ((unpushed (epe-git-unpushed-number)))
+		         (unless (= unpushed 0)
+		           (concat ":" (number-to-string unpushed)))))
        'epe-git-face)))
    (epe-colorize-with-face " λ" 'epe-symbol-face)
    (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
    " "))
+
 (provide 'eshell-prompt-extras)
 
 ;;; eshell-prompt-extras.el ends here
