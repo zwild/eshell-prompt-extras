@@ -174,6 +174,11 @@
   "Face for time in pipeline theme."
   :group 'epe)
 
+(defface epe-status-face
+  '((t (:inherit font-lock-keyword-face)))
+  "Face of command status line (duration, termination timestamp)."
+  :group 'epe)
+
 ;; help definations
 ;; (epe-colorize-with-face "abc" 'font-lock-comment-face)
 (defmacro epe-colorize-with-face (str face)
@@ -225,6 +230,45 @@ length of PATH (sans directory slashes) down to MAX-LEN."
   "Date time information."
   (format-time-string (or format "%Y-%m-%d %H:%M") (current-time)))
 
+(defun epe-status-formatter (timestamp duration)
+  "Return the status display for `epe-status'.
+TIMESTAMP is the value returned by `current-time' and DURATION is the floating
+time the command took to complete in seconds."
+  (format "#[STATUS] End time %s, duration %.3fs\n"
+          (format-time-string "%F %T" timestamp)
+          duration))
+
+(defcustom epe-status-min-duration 1
+  "If a command takes more time than this, display its status with `epe-status'."
+  :group 'epe
+  :type 'number)
+
+(defvar epe-status--last-command-time nil)
+(make-variable-buffer-local 'epe-status--last-command-time)
+
+(defun epe-status--record ()
+  (setq epe-status--last-command-time (current-time)))
+
+(defun epe-status (&optional formatter min-duration)
+  "Termination timestamp and duration of command.
+Status is only returned if command duration was longer than
+MIN-DURATION \(defaults to `epe-status-min-duration').  FORMATTER
+is a function of two arguments, TIMESTAMP and DURATION, that
+returns a string."
+  (if epe-status--last-command-time
+      (let ((duration (time-to-seconds
+                       (time-subtract (current-time) epe-status--last-command-time))))
+        (setq epe-status--last-command-time nil)
+        (if (> duration (or min-duration
+                            epe-status-min-duration))
+            (funcall (or formatter
+                         #'epe-status-formatter)
+                     (current-time)
+                     duration)
+          ""))
+    (progn
+      (add-hook 'eshell-pre-command-hook #'epe-status--record)
+      "")))
 
 ;; tramp info
 (defun epe-remote-p ()

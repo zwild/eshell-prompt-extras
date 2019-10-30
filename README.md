@@ -84,6 +84,7 @@ Faces
     epe-git-face  
     epe-symbol-face  
     epe-sudo-symbol-face
+    epe-status-face
 
 Screenshot
 ----------
