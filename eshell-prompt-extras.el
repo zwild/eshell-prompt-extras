@@ -139,6 +139,11 @@
   "Face of directory in prompt."
   :group 'epe)
 
+(defface epe-git-dir-face
+  `((t (:foreground "gold")))
+  "Face of git path component in prompt."
+  :group 'epe)
+
 (defface epe-git-face
   '((t (:inherit font-lock-constant-face)))
   "Face of git info in prompt."
@@ -544,6 +549,48 @@ uncommitted changes, nil otherwise."
        'epe-git-face)))
    (epe-colorize-with-face " λ" 'epe-symbol-face)
    (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
+   " "))
+
+(defun epe-theme-multiline-with-status ()
+  "A simple eshell-prompt theme with information on its own line
+and status display on command termination."
+  ;; If the prompt spans over multiple lines, the regexp should match
+  ;; last line only.
+  (setq-default eshell-prompt-regexp "^> ")
+  (concat
+   (epe-colorize-with-face (epe-status) 'epe-status-face)
+   (when (epe-remote-p)
+     (epe-colorize-with-face
+      (concat "(" (epe-remote-user) "@" (epe-remote-host) ")")
+      'epe-remote-face))
+   (when (and epe-show-python-info (bound-and-true-p venv-current-name))
+     (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face))
+   (let ((f (cond ((eq epe-path-style 'fish) 'epe-fish-path)
+                  ((eq epe-path-style 'single) 'epe-abbrev-dir-name)
+                  ((eq epe-path-style 'full) 'abbreviate-file-name))))
+     (pcase (epe-extract-git-component (funcall f (eshell/pwd)))
+       (`(,prefix nil)
+        (format
+         (propertize "[%s]" 'face '(:weight bold))
+         (propertize prefix 'face 'epe-dir-face)))
+       (`(,prefix ,git-component)
+        (format
+         (epe-colorize-with-face "[%s%s@%s]" '(:weight bold))
+         (epe-colorize-with-face prefix 'epe-dir-face)
+         (if (string-empty-p git-component)
+             ""
+           (concat "/"
+                   (epe-colorize-with-face git-component 'epe-git-dir-face)))
+         (epe-colorize-with-face
+          (concat (or (epe-git-branch)
+                      (epe-git-tag))
+                  (epe-git-dirty)
+                  (epe-git-untracked)
+                  (let ((unpushed (epe-git-unpushed-number)))
+                    (unless (= unpushed 0)
+                      (concat ":" (number-to-string unpushed)))))
+          'epe-git-face)))))
+   (epe-colorize-with-face "\n>" '(:weight bold))
    " "))
 
 (provide 'eshell-prompt-extras)

@@ -65,6 +65,7 @@ Themes
 
     epe-theme-lambda  
     epe-theme-dakrone
+    epe-theme-multiline-with-status
 
 Custom Variables
 ----------------
