@@ -319,6 +319,29 @@ returns a string."
       (concat epe-git-detached-HEAD-char (match-string 1 branch)))
      (t branch))))
 
+(defun epe-git-tag (&optional rev with-distance)
+  ;; Inspired by `magit-get-current-tag'.
+  "Return the closest tag reachable from REV.
+
+If optional REV is nil, then default to `HEAD'.
+If optional WITH-DISTANCE is non-nil then return (TAG COMMITS),
+if it is `dirty' return (TAG COMMIT DIRTY). COMMITS is the number
+of commits in `HEAD' but not in TAG and DIRTY is t if there are
+uncommitted changes, nil otherwise."
+  (let ((it (with-output-to-string
+              (with-current-buffer standard-output
+                (apply #'call-process "git" nil t nil "describe" "--long" "--tags"
+                       (delq nil (list (and (eq with-distance 'dirty) "--dirty") rev)))))))
+    (when it
+      (save-match-data
+        (string-match
+         "\\(.+\\)-\\(?:0[0-9]*\\|\\([0-9]+\\)\\)-g[0-9a-z]+\\(-dirty\\)?$" it)
+        (if with-distance
+            `(,(match-string 1 it)
+              ,(string-to-number (or (match-string 2 it) "0"))
+              ,@(and (match-string 3 it) (list t)))
+          (match-string 1 it))))))
+
 (defun epe-git-dirty ()
   "Return if your git is 'dirty'."
   (if (string-match "dirty"
