@@ -80,6 +80,8 @@
 (require 'em-dirs)
 (require 'esh-ext)
 (require 'tramp)
+(require 'subr-x)
+(require 'seq)
 (autoload 'cl-reduce "cl-lib")
 (autoload 'vc-git-branches "vc-git")
 (autoload 'vc-find-root "vc-hooks")
@@ -219,6 +221,30 @@ length of PATH (sans directory slashes) down to MAX-LEN."
             len (- len (1- (length (car components))))
             components (cdr components)))
     (concat str (cl-reduce (lambda (a b) (concat a "/" b)) components))))
+
+(defun epe-extract-git-component (path)
+  "Extract and return the tuple (prefix git-component) from PATH."
+  (let ((prefix path)
+        git-component)
+    (when (epe-git-p)
+      ;; We need "--show-prefix and not "--top-level" when we don't follow symlinks.
+      (let* ((git-file-path (abbreviate-file-name
+                             (string-trim-right
+                              (with-output-to-string
+                                (with-current-buffer standard-output
+                                  (call-process "git" nil t nil
+                                                "rev-parse"
+                                                "--show-prefix"))))))
+             (common-folder (car (split-string git-file-path "/"))))
+        (setq prefix (string-join (seq-take-while
+                                   (lambda (s)
+                                     (not (string= s common-folder)))
+                                   (split-string path "/"))
+                                  "/"))
+        (setq git-component
+              (substring-no-properties path
+                                       (min (length path) (1+ (length prefix)))))))
+    (list prefix git-component)))
 
 (defun epe-user-name ()
   "User information."
