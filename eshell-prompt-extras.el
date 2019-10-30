@@ -115,6 +115,11 @@
                  (const :tag "single-dir-name" single)
                  (const :tag "full-path-name" full)))
 
+(defcustom epe-fish-path-max-len 30
+  "Default maximum length for path in `epe-fish-path'."
+  :group 'epe
+  :type 'number)
+
 (defface epe-remote-face
   '((t (:inherit font-lock-comment-face)))
   "Face of remote info in prompt."
@@ -185,12 +190,12 @@
   (replace-regexp-in-string "\n$" "" string))
 
 ;; https://www.emacswiki.org/emacs/EshellPrompt
-(defun epe-fish-path (path)
+(defun epe-fish-path (path &optional max-len)
   "Return a potentially trimmed-down version of the directory PATH, replacing
 parent directories with their initial characters to try to get the character
 length of PATH (sans directory slashes) down to MAX-LEN."
   (let* ((components (split-string (abbreviate-file-name path) "/"))
-         (max-len 30)
+         (max-len (or max-len epe-fish-path-max-len))
          (len (+ (1- (length components))
                  (cl-reduce '+ components :key 'length)))
          (str ""))
