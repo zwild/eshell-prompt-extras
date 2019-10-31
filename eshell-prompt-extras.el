@@ -364,7 +364,7 @@ uncommitted changes, nil otherwise."
               (with-current-buffer standard-output
                 (apply #'call-process "git" nil t nil "describe" "--long" "--tags"
                        (delq nil (list (and (eq with-distance 'dirty) "--dirty") rev)))))))
-    (when it
+    (unless (string-empty-p it)
       (save-match-data
         (string-match
          "\\(.+\\)-\\(?:0[0-9]*\\|\\([0-9]+\\)\\)-g[0-9a-z]+\\(-dirty\\)?$" it)
