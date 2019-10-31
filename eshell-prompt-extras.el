@@ -9,6 +9,7 @@
 ;; Version: 0.96
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
+;; Package-Requires: ((emacs "25"))
 
 ;; This file is NOT part of GNU Emacs.
 
