@@ -557,7 +557,7 @@ uncommitted changes, nil otherwise."
 and status display on command termination."
   ;; If the prompt spans over multiple lines, the regexp should match
   ;; last line only.
-  (setq-default eshell-prompt-regexp "^> ")
+  (setq eshell-prompt-regexp "^> ")
   (concat
    (epe-colorize-with-face (epe-status) 'epe-status-face)
    (when (epe-remote-p)
