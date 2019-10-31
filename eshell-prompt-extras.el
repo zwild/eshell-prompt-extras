@@ -9,6 +9,7 @@
 ;; Version: 0.96
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
+;; Package-Requires: ((emacs "25"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -80,6 +81,8 @@
 (require 'em-dirs)
 (require 'esh-ext)
 (require 'tramp)
+(require 'subr-x)
+(require 'seq)
 (autoload 'cl-reduce "cl-lib")
 (autoload 'vc-git-branches "vc-git")
 (autoload 'vc-find-root "vc-hooks")
@@ -115,6 +118,11 @@
                  (const :tag "single-dir-name" single)
                  (const :tag "full-path-name" full)))
 
+(defcustom epe-fish-path-max-len 30
+  "Default maximum length for path in `epe-fish-path'."
+  :group 'epe
+  :type 'number)
+
 (defface epe-remote-face
   '((t (:inherit font-lock-comment-face)))
   "Face of remote info in prompt."
@@ -130,6 +138,11 @@
                       'eshell-ls-directory
                     'eshell-ls-directory-face) )))
   "Face of directory in prompt."
+  :group 'epe)
+
+(defface epe-git-dir-face
+  `((t (:foreground "gold")))
+  "Face of git path component in prompt."
   :group 'epe)
 
 (defface epe-git-face
@@ -169,6 +182,11 @@
   "Face for time in pipeline theme."
   :group 'epe)
 
+(defface epe-status-face
+  '((t (:inherit font-lock-keyword-face)))
+  "Face of command status line (duration, termination timestamp)."
+  :group 'epe)
+
 ;; help definations
 ;; (epe-colorize-with-face "abc" 'font-lock-comment-face)
 (defmacro epe-colorize-with-face (str face)
@@ -185,12 +203,12 @@
   (replace-regexp-in-string "\n$" "" string))
 
 ;; https://www.emacswiki.org/emacs/EshellPrompt
-(defun epe-fish-path (path)
+(defun epe-fish-path (path &optional max-len)
   "Return a potentially trimmed-down version of the directory PATH, replacing
 parent directories with their initial characters to try to get the character
 length of PATH (sans directory slashes) down to MAX-LEN."
   (let* ((components (split-string (abbreviate-file-name path) "/"))
-         (max-len 30)
+         (max-len (or max-len epe-fish-path-max-len))
          (len (+ (1- (length components))
                  (cl-reduce '+ components :key 'length)))
          (str ""))
@@ -210,6 +228,30 @@ length of PATH (sans directory slashes) down to MAX-LEN."
             components (cdr components)))
     (concat str (cl-reduce (lambda (a b) (concat a "/" b)) components))))
 
+(defun epe-extract-git-component (path)
+  "Extract and return the tuple (prefix git-component) from PATH."
+  (let ((prefix path)
+        git-component)
+    (when (epe-git-p)
+      ;; We need "--show-prefix and not "--top-level" when we don't follow symlinks.
+      (let* ((git-file-path (abbreviate-file-name
+                             (string-trim-right
+                              (with-output-to-string
+                                (with-current-buffer standard-output
+                                  (call-process "git" nil t nil
+                                                "rev-parse"
+                                                "--show-prefix"))))))
+             (common-folder (car (split-string git-file-path "/"))))
+        (setq prefix (string-join (seq-take-while
+                                   (lambda (s)
+                                     (not (string= s common-folder)))
+                                   (split-string path "/"))
+                                  "/"))
+        (setq git-component
+              (substring-no-properties path
+                                       (min (length path) (1+ (length prefix)))))))
+    (list prefix git-component)))
+
 (defun epe-user-name ()
   "User information."
   (if (epe-remote-p)
@@ -220,6 +262,45 @@ length of PATH (sans directory slashes) down to MAX-LEN."
   "Date time information."
   (format-time-string (or format "%Y-%m-%d %H:%M") (current-time)))
 
+(defun epe-status-formatter (timestamp duration)
+  "Return the status display for `epe-status'.
+TIMESTAMP is the value returned by `current-time' and DURATION is the floating
+time the command took to complete in seconds."
+  (format "#[STATUS] End time %s, duration %.3fs\n"
+          (format-time-string "%F %T" timestamp)
+          duration))
+
+(defcustom epe-status-min-duration 1
+  "If a command takes more time than this, display its status with `epe-status'."
+  :group 'epe
+  :type 'number)
+
+(defvar epe-status--last-command-time nil)
+(make-variable-buffer-local 'epe-status--last-command-time)
+
+(defun epe-status--record ()
+  (setq epe-status--last-command-time (current-time)))
+
+(defun epe-status (&optional formatter min-duration)
+  "Termination timestamp and duration of command.
+Status is only returned if command duration was longer than
+MIN-DURATION \(defaults to `epe-status-min-duration').  FORMATTER
+is a function of two arguments, TIMESTAMP and DURATION, that
+returns a string."
+  (if epe-status--last-command-time
+      (let ((duration (time-to-seconds
+                       (time-subtract (current-time) epe-status--last-command-time))))
+        (setq epe-status--last-command-time nil)
+        (if (> duration (or min-duration
+                            epe-status-min-duration))
+            (funcall (or formatter
+                         #'epe-status-formatter)
+                     (current-time)
+                     duration)
+          ""))
+    (progn
+      (add-hook 'eshell-pre-command-hook #'epe-status--record)
+      "")))
 
 ;; tramp info
 (defun epe-remote-p ()
@@ -269,6 +350,29 @@ length of PATH (sans directory slashes) down to MAX-LEN."
      ((string-match "^(HEAD detached at \\([[:word:]]+\\)" branch)
       (concat epe-git-detached-HEAD-char (match-string 1 branch)))
      (t branch))))
+
+(defun epe-git-tag (&optional rev with-distance)
+  ;; Inspired by `magit-get-current-tag'.
+  "Return the closest tag reachable from REV.
+
+If optional REV is nil, then default to `HEAD'.
+If optional WITH-DISTANCE is non-nil then return (TAG COMMITS),
+if it is `dirty' return (TAG COMMIT DIRTY). COMMITS is the number
+of commits in `HEAD' but not in TAG and DIRTY is t if there are
+uncommitted changes, nil otherwise."
+  (let ((it (with-output-to-string
+              (with-current-buffer standard-output
+                (apply #'call-process "git" nil t nil "describe" "--long" "--tags"
+                       (delq nil (list (and (eq with-distance 'dirty) "--dirty") rev)))))))
+    (unless (string-empty-p it)
+      (save-match-data
+        (string-match
+         "\\(.+\\)-\\(?:0[0-9]*\\|\\([0-9]+\\)\\)-g[0-9a-z]+\\(-dirty\\)?$" it)
+        (if with-distance
+            `(,(match-string 1 it)
+              ,(string-to-number (or (match-string 2 it) "0"))
+              ,@(and (match-string 3 it) (list t)))
+          (match-string 1 it))))))
 
 (defun epe-git-dirty ()
   "Return if your git is 'dirty'."
@@ -446,6 +550,48 @@ length of PATH (sans directory slashes) down to MAX-LEN."
        'epe-git-face)))
    (epe-colorize-with-face " λ" 'epe-symbol-face)
    (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
+   " "))
+
+(defun epe-theme-multiline-with-status ()
+  "A simple eshell-prompt theme with information on its own line
+and status display on command termination."
+  ;; If the prompt spans over multiple lines, the regexp should match
+  ;; last line only.
+  (setq-default eshell-prompt-regexp "^> ")
+  (concat
+   (epe-colorize-with-face (epe-status) 'epe-status-face)
+   (when (epe-remote-p)
+     (epe-colorize-with-face
+      (concat "(" (epe-remote-user) "@" (epe-remote-host) ")")
+      'epe-remote-face))
+   (when (and epe-show-python-info (bound-and-true-p venv-current-name))
+     (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face))
+   (let ((f (cond ((eq epe-path-style 'fish) 'epe-fish-path)
+                  ((eq epe-path-style 'single) 'epe-abbrev-dir-name)
+                  ((eq epe-path-style 'full) 'abbreviate-file-name))))
+     (pcase (epe-extract-git-component (funcall f (eshell/pwd)))
+       (`(,prefix nil)
+        (format
+         (propertize "[%s]" 'face '(:weight bold))
+         (propertize prefix 'face 'epe-dir-face)))
+       (`(,prefix ,git-component)
+        (format
+         (epe-colorize-with-face "[%s%s@%s]" '(:weight bold))
+         (epe-colorize-with-face prefix 'epe-dir-face)
+         (if (string-empty-p git-component)
+             ""
+           (concat "/"
+                   (epe-colorize-with-face git-component 'epe-git-dir-face)))
+         (epe-colorize-with-face
+          (concat (or (epe-git-branch)
+                      (epe-git-tag))
+                  (epe-git-dirty)
+                  (epe-git-untracked)
+                  (let ((unpushed (epe-git-unpushed-number)))
+                    (unless (= unpushed 0)
+                      (concat ":" (number-to-string unpushed)))))
+          'epe-git-face)))))
+   (epe-colorize-with-face "\n>" '(:weight bold))
    " "))
 
 (provide 'eshell-prompt-extras)
