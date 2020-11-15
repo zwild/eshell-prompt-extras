@@ -426,6 +426,9 @@ uncommitted changes, nil otherwise."
 (defun epe-git-diverged-p ()
   (epe-git-p-helper (concat epe-git-status " | grep '^## .*deverged'")))
 
+(defvar eshell-prompt-regexp)
+(defvar venv-current-name)
+(defvar conda-env-current-name)
 
 ;;; Themes
 ;; Please post your theme here if you want.
