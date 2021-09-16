@@ -123,6 +123,11 @@
   :group 'epe
   :type 'number)
 
+(defcustom epe-pipeline-show-time t
+  "A flag which indicates whether epe-pipeline should show the time."
+  :group 'epe
+  :type 'boolean)
+
 (defface epe-remote-face
   '((t (:inherit font-lock-comment-face)))
   "Face of remote info in prompt."
@@ -535,8 +540,11 @@ uncommitted changes, nil otherwise."
 	    (epe-colorize-with-face (system-name) 'epe-pipeline-host-face))))
    (concat
     (epe-colorize-with-face "]──[" 'epe-pipeline-delimiter-face)
-    (epe-colorize-with-face (format-time-string "%H:%M" (current-time)) 'epe-pipeline-time-face)
-    (epe-colorize-with-face "]──[" 'epe-pipeline-delimiter-face)
+    (when epe-pipeline-show-time
+      (concat
+       (epe-colorize-with-face
+        (format-time-string "%H:%M" (current-time)) 'epe-pipeline-time-face)
+       (epe-colorize-with-face "]──[" 'epe-pipeline-delimiter-face)))
     (epe-colorize-with-face (concat (eshell/pwd)) 'epe-dir-face)
     (epe-colorize-with-face  "]\n" 'epe-pipeline-delimiter-face)
     (epe-colorize-with-face "└─>" 'epe-pipeline-delimiter-face))
