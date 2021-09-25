@@ -163,7 +163,9 @@
   :group 'epe)
 
 (defface epe-sudo-symbol-face
-  '((t (:inherit eshell-ls-unreadable-face)))
+  `((t (:inherit ,(if (facep 'eshell-ls-unreadable)
+                      'eshell-ls-unreadable
+                    'eshell-ls-unreadable-face))))
   "Face of your sudo symbol in prompt."
   :group 'epe)
 
