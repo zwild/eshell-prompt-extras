@@ -455,7 +455,7 @@ uncommitted changes, nil otherwise."
    (let ((f (cond ((eq epe-path-style 'fish) 'epe-fish-path)
                   ((eq epe-path-style 'single) 'epe-abbrev-dir-name)
                   ((eq epe-path-style 'full) 'abbreviate-file-name))))
-     (epe-colorize-with-face (funcall f (eshell/pwd)) 'epe-dir-face))
+     (epe-colorize-with-face (funcall f (tramp-file-local-name (eshell/pwd))) 'epe-dir-face))
    (when (epe-git-p)
      (concat
       (epe-colorize-with-face ":" 'epe-dir-face)
@@ -507,7 +507,9 @@ uncommitted changes, nil otherwise."
      (epe-colorize-with-face (funcall
                               shrink-paths
                               (split-string
-                               (funcall pwd-repl-home (eshell/pwd)) "/"))
+                               (funcall pwd-repl-home
+                                        (tramp-file-local-name (eshell/pwd)))
+                               "/"))
                              'epe-dir-face)
      (when (epe-git-p)
        (concat
@@ -547,7 +549,7 @@ uncommitted changes, nil otherwise."
        (epe-colorize-with-face
         (format-time-string "%H:%M" (current-time)) 'epe-pipeline-time-face)
        (epe-colorize-with-face "]──[" 'epe-pipeline-delimiter-face)))
-    (epe-colorize-with-face (concat (eshell/pwd)) 'epe-dir-face)
+    (epe-colorize-with-face (concat (tramp-file-local-name (eshell/pwd))) 'epe-dir-face)
     (epe-colorize-with-face  "]\n" 'epe-pipeline-delimiter-face)
     (epe-colorize-with-face "└─>" 'epe-pipeline-delimiter-face))
    (when (and epe-show-python-info (bound-and-true-p venv-current-name))
