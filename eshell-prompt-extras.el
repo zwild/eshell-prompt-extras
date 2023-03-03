@@ -169,6 +169,16 @@
   "Face of your sudo symbol in prompt."
   :group 'epe)
 
+(defface epe-success-face
+  '((t (:inherit success)))
+  "Face of success info in prompt."
+  :group 'epe)
+
+(defface epe-error-face
+  '((t (:inherit error)))
+  "Face of failure info in prompt."
+  :group 'epe)
+
 (defface epe-pipeline-delimiter-face
   '((t :foreground "green"))
   "Face for pipeline theme delimiter."
@@ -467,7 +477,9 @@ uncommitted changes, nil otherwise."
                  (unless (= unpushed 0)
                    (concat ":" (number-to-string unpushed)))))
        'epe-git-face)))
-   (epe-colorize-with-face " λ" 'epe-symbol-face)
+   (epe-colorize-with-face " λ" (if (zerop eshell-last-command-status)
+                                    'epe-success-face
+                                  'epe-error-face))
    (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
    " "))
 
@@ -521,7 +533,9 @@ uncommitted changes, nil otherwise."
                  (unless (= (epe-git-unpushed-number) 0)
                    (concat ":" (number-to-string (epe-git-unpushed-number)))))
          'epe-git-face)))
-     (epe-colorize-with-face " λ" 'epe-symbol-face)
+     (epe-colorize-with-face " λ" (if (zerop eshell-last-command-status)
+                                      'epe-success-face
+                                    'epe-error-face))
      (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
      " ")))
 
