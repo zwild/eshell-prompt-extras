@@ -111,12 +111,18 @@
   :group 'epe
   :type 'string)
 
+(defcustom epe-show-local-working-directory nil
+  "A flag which indicates whether epe-pipeline should show the local
+directory even when Tramp is active."
+  :group 'epe
+  :type 'boolean)
+
 (defcustom epe-path-style 'fish
   "Prompt path name style."
   :group 'epe
   :type '(choice (const :tag "fish-style-dir-name" fish)
-                 (const :tag "single-dir-name" single)
-                 (const :tag "full-path-name" full)))
+          (const :tag "single-dir-name" single)
+          (const :tag "full-path-name" full)))
 
 (defcustom epe-fish-path-max-len 30
   "Default maximum length for path in `epe-fish-path'."
@@ -169,6 +175,16 @@
   "Face of your sudo symbol in prompt."
   :group 'epe)
 
+(defface epe-success-face
+  '((t (:inherit success)))
+  "Face of success info in prompt."
+  :group 'epe)
+
+(defface epe-error-face
+  '((t (:inherit error)))
+  "Face of failure info in prompt."
+  :group 'epe)
+
 (defface epe-pipeline-delimiter-face
   '((t :foreground "green"))
   "Face for pipeline theme delimiter."
@@ -198,6 +214,12 @@
 ;; (epe-colorize-with-face "abc" 'font-lock-comment-face)
 (defmacro epe-colorize-with-face (str face)
   `(propertize ,str 'face ,face))
+
+(defun epe-pwd ()
+  "Return the current working directory-name."
+  (if epe-show-local-working-directory
+      (tramp-file-local-name (eshell/pwd))
+    (eshell/pwd)))
 
 (defun epe-abbrev-dir-name (dir)
   "Return the base directory name."
@@ -455,7 +477,7 @@ uncommitted changes, nil otherwise."
    (let ((f (cond ((eq epe-path-style 'fish) 'epe-fish-path)
                   ((eq epe-path-style 'single) 'epe-abbrev-dir-name)
                   ((eq epe-path-style 'full) 'abbreviate-file-name))))
-     (epe-colorize-with-face (funcall f (eshell/pwd)) 'epe-dir-face))
+     (epe-colorize-with-face (funcall f (epe-pwd)) 'epe-dir-face))
    (when (epe-git-p)
      (concat
       (epe-colorize-with-face ":" 'epe-dir-face)
@@ -467,7 +489,9 @@ uncommitted changes, nil otherwise."
                  (unless (= unpushed 0)
                    (concat ":" (number-to-string unpushed)))))
        'epe-git-face)))
-   (epe-colorize-with-face " λ" 'epe-symbol-face)
+   (epe-colorize-with-face " λ" (if (zerop eshell-last-command-status)
+                                    'epe-success-face
+                                  'epe-error-face))
    (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
    " "))
 
@@ -506,8 +530,8 @@ uncommitted changes, nil otherwise."
        (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face))
      (epe-colorize-with-face (funcall
                               shrink-paths
-                              (split-string
-                               (funcall pwd-repl-home (eshell/pwd)) "/"))
+                              (split-string (funcall pwd-repl-home (epe-pwd))
+                                            "/"))
                              'epe-dir-face)
      (when (epe-git-p)
        (concat
@@ -519,7 +543,9 @@ uncommitted changes, nil otherwise."
                  (unless (= (epe-git-unpushed-number) 0)
                    (concat ":" (number-to-string (epe-git-unpushed-number)))))
          'epe-git-face)))
-     (epe-colorize-with-face " λ" 'epe-symbol-face)
+     (epe-colorize-with-face " λ" (if (zerop eshell-last-command-status)
+                                      'epe-success-face
+                                    'epe-error-face))
      (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
      " ")))
 
@@ -529,17 +555,17 @@ uncommitted changes, nil otherwise."
   (concat
    (if (epe-remote-p)
        (progn
-	     (concat
-	      (epe-colorize-with-face "┌─[" 'epe-pipeline-delimiter-face)
-	      (epe-colorize-with-face (epe-remote-user) 'epe-pipeline-user-face)
-	      (epe-colorize-with-face "@" 'epe-pipeline-delimiter-face)
-	      (epe-colorize-with-face (epe-remote-host) 'epe-pipeline-host-face)))
+	 (concat
+	  (epe-colorize-with-face "┌─[" 'epe-pipeline-delimiter-face)
+	  (epe-colorize-with-face (epe-remote-user) 'epe-pipeline-user-face)
+	  (epe-colorize-with-face "@" 'epe-pipeline-delimiter-face)
+	  (epe-colorize-with-face (epe-remote-host) 'epe-pipeline-host-face)))
      (progn
        (concat
-	    (epe-colorize-with-face "┌─[" 'epe-pipeline-delimiter-face)
-	    (epe-colorize-with-face (user-login-name) 'epe-pipeline-user-face)
-	    (epe-colorize-with-face "@" 'epe-pipeline-delimiter-face)
-	    (epe-colorize-with-face (system-name) 'epe-pipeline-host-face))))
+	(epe-colorize-with-face "┌─[" 'epe-pipeline-delimiter-face)
+	(epe-colorize-with-face (user-login-name) 'epe-pipeline-user-face)
+	(epe-colorize-with-face "@" 'epe-pipeline-delimiter-face)
+	(epe-colorize-with-face (system-name) 'epe-pipeline-host-face))))
    (concat
     (epe-colorize-with-face "]──[" 'epe-pipeline-delimiter-face)
     (when epe-pipeline-show-time
@@ -547,7 +573,7 @@ uncommitted changes, nil otherwise."
        (epe-colorize-with-face
         (format-time-string "%H:%M" (current-time)) 'epe-pipeline-time-face)
        (epe-colorize-with-face "]──[" 'epe-pipeline-delimiter-face)))
-    (epe-colorize-with-face (concat (eshell/pwd)) 'epe-dir-face)
+    (epe-colorize-with-face (epe-pwd) 'epe-dir-face)
     (epe-colorize-with-face  "]\n" 'epe-pipeline-delimiter-face)
     (epe-colorize-with-face "└─>" 'epe-pipeline-delimiter-face))
    (when (and epe-show-python-info (bound-and-true-p venv-current-name))
@@ -557,11 +583,11 @@ uncommitted changes, nil otherwise."
       (epe-colorize-with-face ":" 'epe-dir-face)
       (epe-colorize-with-face
        (concat (epe-git-branch)
-	           (epe-git-dirty)
-	           (epe-git-untracked)
-	           (let ((unpushed (epe-git-unpushed-number)))
-		         (unless (= unpushed 0)
-		           (concat ":" (number-to-string unpushed)))))
+	       (epe-git-dirty)
+	       (epe-git-untracked)
+	       (let ((unpushed (epe-git-unpushed-number)))
+		 (unless (= unpushed 0)
+		   (concat ":" (number-to-string unpushed)))))
        'epe-git-face)))
    (epe-colorize-with-face " λ" 'epe-symbol-face)
    (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
@@ -584,7 +610,7 @@ and status display on command termination."
    (let ((f (cond ((eq epe-path-style 'fish) 'epe-fish-path)
                   ((eq epe-path-style 'single) 'epe-abbrev-dir-name)
                   ((eq epe-path-style 'full) 'abbreviate-file-name))))
-     (pcase (epe-extract-git-component (funcall f (eshell/pwd)))
+     (pcase (epe-extract-git-component (funcall f (epe-pwd)))
        (`(,prefix nil)
         (format
          (propertize "[%s]" 'face '(:weight bold))
