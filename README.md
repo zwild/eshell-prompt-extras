@@ -91,3 +91,5 @@ Screenshot
 ----------
 
 ![picture of eshell-prompt-extras](https://raw.githubusercontent.com/kaihaosw/eshell-prompt-extras/master/screenshot.png)
+![](./epe-theme-pipeline.png)
+![](./epe-theme-multiline-with-status.png)
