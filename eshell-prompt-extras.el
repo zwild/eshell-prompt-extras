@@ -88,32 +88,31 @@
 (autoload 'vc-find-root "vc-hooks")
 
 (defgroup epe nil
-  "Eshell extras"
+  "Display extra information for your eshell prompt."
   :group 'eshell-prompt)
 
 (defcustom epe-show-python-info t
-  "non nil will show python info."
+  "Whether epe-pipeline should show the python virtual environment info."
   :group 'epe
   :type 'boolean)
 
 (defcustom epe-git-dirty-char "*"
-  "Character to show for a changed git repository"
+  "The character to show when the git repository is dirty."
   :group 'epe
   :type 'string)
 
 (defcustom epe-git-untracked-char "?"
-  "Character to show for an untracked file in the git repository"
+  "The character to show when the git repository has untracked files."
   :group 'epe
   :type 'string)
 
 (defcustom epe-git-detached-HEAD-char "D:"
-  "Character to show for an detached HEAD in the git repository"
+  "The character to show when the git repository is in detached HEAD state."
   :group 'epe
   :type 'string)
 
 (defcustom epe-show-local-working-directory nil
-  "A flag which indicates whether epe-pipeline should show the local
-directory even when Tramp is active."
+  "Whether epe-pipeline should show the local path of the working directory."
   :group 'epe
   :type 'boolean)
 
@@ -213,6 +212,7 @@ directory even when Tramp is active."
 ;; help definations
 ;; (epe-colorize-with-face "abc" 'font-lock-comment-face)
 (defmacro epe-colorize-with-face (str face)
+  "Colorize STR with FACE."
   `(propertize ,str 'face ,face))
 
 (defun epe-pwd ()
@@ -222,20 +222,22 @@ directory even when Tramp is active."
     (eshell/pwd)))
 
 (defun epe-abbrev-dir-name (dir)
-  "Return the base directory name."
+  "Return the base directory name of DIR."
   (if (string= dir (getenv "HOME"))
       "~"
     (let ((dirname (file-name-nondirectory dir)))
       (if (string= dirname "") "/" dirname))))
 
 (defun epe-trim-newline (string)
+  "Trim newline from the end of STRING."
   (replace-regexp-in-string "\n$" "" string))
 
 ;; https://www.emacswiki.org/emacs/EshellPrompt
 (defun epe-fish-path (path &optional max-len)
-  "Return a potentially trimmed-down version of the directory PATH, replacing
-parent directories with their initial characters to try to get the character
-length of PATH (sans directory slashes) down to MAX-LEN."
+  "Return a potentially trimmed-down version of the directory PATH.
+Replacing parent directories with their initial characters to try
+to get the character length of PATH (sans directory slashes) down
+to MAX-LEN."
   (let* ((components (split-string (abbreviate-file-name path) "/"))
          (max-len (or max-len epe-fish-path-max-len))
          (len (+ (1- (length components))
@@ -288,7 +290,7 @@ length of PATH (sans directory slashes) down to MAX-LEN."
     (getenv "USER")))
 
 (defun epe-date-time (&optional format)
-  "Date time information."
+  "Date time information in FORMAT."
   (format-time-string (or format "%Y-%m-%d %H:%M") (current-time)))
 
 (defun epe-status-formatter (timestamp duration)
@@ -308,6 +310,7 @@ time the command took to complete in seconds."
 (make-variable-buffer-local 'epe-status--last-command-time)
 
 (defun epe-status--record ()
+  "Record the time of the current command."
   (setq epe-status--last-command-time (current-time)))
 
 (defun epe-status (&optional formatter min-duration)
@@ -333,6 +336,7 @@ returns a string."
 
 ;; tramp info
 (defun epe-remote-p ()
+  "If you are in a remote machine."
   (tramp-tramp-file-p default-directory))
 
 (defun epe-remote-user ()
@@ -362,6 +366,7 @@ returns a string."
          (vc-find-root (eshell/pwd) ".git"))))
 
 (defun epe-git-short-sha1 ()
+  "Return the short sha1 of your git commit."
   (epe-trim-newline (shell-command-to-string "git rev-parse --short HEAD")))
 
 ;; (defun epe-git-branch ()
@@ -415,44 +420,55 @@ uncommitted changes, nil otherwise."
    (shell-command-to-string "git log @{u}.. --oneline 2> /dev/null | wc -l")))
 
 (defun epe-git-untracked ()
+  "Return `epe-git-untracked-char' if your git has untracked files."
   (and (epe-git-untracked-p) epe-git-untracked-char))
 
 (defvar epe-git-status
   "git status --porcelain -b 2> /dev/null")
 
 (defun epe-git-p-helper (command)
+  "Return if COMMAND has output."
   (not (string= (shell-command-to-string command) "")))
 
 (defun epe-git-untracked-p ()
+  "Return if your git has untracked files."
   (epe-git-p-helper (concat epe-git-status " | grep '^\?\? '")))
 
 (defun epe-git-added-p ()
+  "Return if your git has added files."
   (or (epe-git-p-helper (concat epe-git-status " | grep '^A '"))
       (epe-git-p-helper (concat epe-git-status " | grep '^M '"))))
 
 (defun epe-git-modified-p ()
+  "Return if your git has modified files."
   (or (epe-git-p-helper (concat epe-git-status " | grep '^ M '"))
       (epe-git-p-helper (concat epe-git-status " | grep '^AM '"))
       (epe-git-p-helper (concat epe-git-status " | grep '^ T '"))))
 
 (defun epe-git-renamed-p ()
+  "Return if your git has renamed files."
   (epe-git-p-helper (concat epe-git-status " | grep '^R '")))
 
 (defun epe-git-deleted-p ()
+  "Return if your git has deleted files."
   (or (epe-git-p-helper (concat epe-git-status " | grep '^ D '"))
       (epe-git-p-helper (concat epe-git-status " | grep '^D '"))
       (epe-git-p-helper (concat epe-git-status " | grep '^AD '"))))
 
 (defun epe-git-unmerged-p ()
+  "Return if your git has unmerged files."
   (epe-git-p-helper (concat epe-git-status " | grep '^UU '")))
 
 (defun epe-git-ahead-p ()
+  "Return if your git has ahead commits."
   (epe-git-p-helper (concat epe-git-status " | grep '^## .*ahead'")))
 
 (defun epe-git-behind-p ()
+  "Return if your git has behind commits."
   (epe-git-p-helper (concat epe-git-status " | grep '^## .*behind'")))
 
 (defun epe-git-diverged-p ()
+  "Return if your git has diverged commits."
   (epe-git-p-helper (concat epe-git-status " | grep '^## .*deverged'")))
 
 (defvar eshell-prompt-regexp)
@@ -594,8 +610,8 @@ uncommitted changes, nil otherwise."
    " "))
 
 (defun epe-theme-multiline-with-status ()
-  "A simple eshell-prompt theme with information on its own line
-and status display on command termination."
+  "A simple eshell-prompt theme with information on its own line.
+The status is displayed on the last line."
   ;; If the prompt spans over multiple lines, the regexp should match
   ;; last line only.
   (setq eshell-prompt-regexp "^> ")
