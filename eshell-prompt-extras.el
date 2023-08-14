@@ -1,4 +1,4 @@
-;;; eshell-prompt-extras.el --- Display extra information for your eshell prompt.
+;;; eshell-prompt-extras.el --- Display extra information for your eshell prompt. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2014-2019 Wei Zhao
 
