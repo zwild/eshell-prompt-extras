@@ -404,7 +404,7 @@ uncommitted changes, nil otherwise."
           (match-string 1 it))))))
 
 (defun epe-git-dirty ()
-  "Return if your git is 'dirty'."
+  "Return if your git is \"dirty\"."
   (if (string-match "dirty"
                     (shell-command-to-string "git diff-index --quiet HEAD -- || echo -n 'dirty'"))
       epe-git-dirty-char ""))
