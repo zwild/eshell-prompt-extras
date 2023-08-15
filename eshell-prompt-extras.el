@@ -4,9 +4,9 @@
 
 ;; Author: zwild <judezhao@outlook.com>
 ;; Contributors: Lee Hinman
-;; Maintainer: Chunyang Xu <mail@xuchunyang.me>
+;; Maintainer: Xu Chunyang <xuchunyang56@gmail.com>
 ;; URL: https://github.com/zwild/eshell-prompt-extras
-;; Version: 1.0
+;; Version: 1.1
 ;; Created: 2014-08-16
 ;; Keywords: eshell, prompt
 ;; Package-Requires: ((emacs "25"))
