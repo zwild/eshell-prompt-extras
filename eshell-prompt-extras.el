@@ -570,12 +570,7 @@ uncommitted changes, nil otherwise."
      (concat
       (epe-colorize-with-face ":" 'epe-dir-face)
       (epe-colorize-with-face
-       (concat (epe-git-branch)
-               (epe-git-dirty)
-               (epe-git-untracked)
-               (let ((unpushed (epe-git-unpushed-number)))
-                 (unless (= unpushed 0)
-                   (concat ":" (number-to-string unpushed)))))
+       (epe-git-default-info)
        'epe-git-face)))
    (epe-colorize-with-face " λ" (if (zerop eshell-last-command-status)
                                     'epe-success-face
@@ -625,11 +620,7 @@ uncommitted changes, nil otherwise."
        (concat
         (epe-colorize-with-face ":" 'epe-dir-face)
         (epe-colorize-with-face
-         (concat (epe-git-branch)
-                 (epe-git-dirty)
-                 (epe-git-untracked)
-                 (unless (= (epe-git-unpushed-number) 0)
-                   (concat ":" (number-to-string (epe-git-unpushed-number)))))
+         (epe-git-default-info)
          'epe-git-face)))
      (epe-colorize-with-face " λ" (if (zerop eshell-last-command-status)
                                       'epe-success-face
@@ -670,12 +661,7 @@ uncommitted changes, nil otherwise."
      (concat
       (epe-colorize-with-face ":" 'epe-dir-face)
       (epe-colorize-with-face
-       (concat (epe-git-branch)
-	       (epe-git-dirty)
-	       (epe-git-untracked)
-	       (let ((unpushed (epe-git-unpushed-number)))
-		 (unless (= unpushed 0)
-		   (concat ":" (number-to-string unpushed)))))
+       (epe-git-default-info)
        'epe-git-face)))
    (epe-colorize-with-face " λ" 'epe-symbol-face)
    (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
@@ -712,16 +698,20 @@ The status is displayed on the last line."
            (concat "/"
                    (epe-colorize-with-face git-component 'epe-git-dir-face)))
          (epe-colorize-with-face
-          (concat (or (epe-git-branch)
-                      (epe-git-tag))
-                  (epe-git-dirty)
-                  (epe-git-untracked)
-                  (let ((unpushed (epe-git-unpushed-number)))
-                    (unless (= unpushed 0)
-                      (concat ":" (number-to-string unpushed)))))
+          (epe-git-default-info)
           'epe-git-face)))))
    (epe-colorize-with-face "\n>" '(:weight bold))
    " "))
+
+(defun epe-git-default-info ()
+  "Default git information (epe prompt backwards compatibility)"
+  (concat (or (epe-git-branch)
+              (epe-git-tag))
+          (epe-git-dirty)
+          (epe-git-untracked)
+          (let ((unpushed (epe-git-unpushed-number)))
+            (unless (= unpushed 0)
+              (concat ":" (number-to-string unpushed))))))
 
 (provide 'eshell-prompt-extras)
 
