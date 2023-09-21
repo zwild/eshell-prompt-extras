@@ -173,6 +173,11 @@
   :group 'epe
   :type 'boolean)
 
+(defcustom epe-show-git-status-estended nil
+  "A flag which indicates whether show extended git information."
+  :group 'epe
+  :type 'boolean)
+
 (defface epe-remote-face
   '((t (:inherit font-lock-comment-face)))
   "Face of remote info in prompt."
@@ -466,6 +471,9 @@ uncommitted changes, nil otherwise."
 (defvar epe-git-status
   "git status --porcelain -b 2> /dev/null")
 
+(defvar epe-git-describe
+  "git describe --always --tags --long 2> /dev/null")
+
 (defun epe-git-modified ()
   "Return `epe-git-modified-char' if your git has modified files."
   (and (epe-git-modified-p) epe-git-modified-char))
@@ -570,7 +578,7 @@ uncommitted changes, nil otherwise."
      (concat
       (epe-colorize-with-face ":" 'epe-dir-face)
       (epe-colorize-with-face
-       (epe-git-default-info)
+       (epe-git-prompt-info)
        'epe-git-face)))
    (epe-colorize-with-face " λ" (if (zerop eshell-last-command-status)
                                     'epe-success-face
@@ -620,7 +628,7 @@ uncommitted changes, nil otherwise."
        (concat
         (epe-colorize-with-face ":" 'epe-dir-face)
         (epe-colorize-with-face
-         (epe-git-default-info)
+         (epe-git-prompt-info)
          'epe-git-face)))
      (epe-colorize-with-face " λ" (if (zerop eshell-last-command-status)
                                       'epe-success-face
@@ -661,7 +669,7 @@ uncommitted changes, nil otherwise."
      (concat
       (epe-colorize-with-face ":" 'epe-dir-face)
       (epe-colorize-with-face
-       (epe-git-default-info)
+       (epe-git-prompt-info)
        'epe-git-face)))
    (epe-colorize-with-face " λ" 'epe-symbol-face)
    (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
@@ -698,10 +706,15 @@ The status is displayed on the last line."
            (concat "/"
                    (epe-colorize-with-face git-component 'epe-git-dir-face)))
          (epe-colorize-with-face
-          (epe-git-default-info)
+          (epe-git-prompt-info)
           'epe-git-face)))))
    (epe-colorize-with-face "\n>" '(:weight bold))
    " "))
+
+(defun epe-git-prompt-info ()
+  (if epe-show-git-status-estended
+      (epe-git-extended-info)
+    (epe-git-default-info)))
 
 (defun epe-git-default-info ()
   "Default git information (epe prompt backwards compatibility)"
@@ -712,6 +725,36 @@ The status is displayed on the last line."
           (let ((unpushed (epe-git-unpushed-number)))
             (unless (= unpushed 0)
               (concat ":" (number-to-string unpushed))))))
+
+(defun epe-git-extended-info ()
+  (concat (epe-git-description)
+          (epe-git-full-status)
+          (let ((unpushed (epe-git-unpushed-number)))
+            (unless (= unpushed 0)
+              (concat ":" (number-to-string unpushed))))))
+
+(defun epe-git-description ()
+  (let* ((git-desc (epe-trim-newline
+                    (shell-command-to-string epe-git-describe)))
+         (git-branch (epe-git-branch))
+         (description (concat git-branch "-" git-desc )))
+    (if (> (length (string-trim description)) 1)
+        (concat "(" description ")"))))
+
+(defun epe-git-full-status ()
+  (let ((git-status (concat
+                     (epe-git-dirty)
+                     (epe-git-untracked)
+                     (epe-git-modified)
+                     (epe-git-renamed)
+                     (epe-git-deleted)
+                     (epe-git-added)
+                     (epe-git-unmerged)
+                     (epe-git-ahead)
+                     (epe-git-behind)
+                     (epe-git-diverged))))
+    (if (> (length (string-trim git-status)) 0)
+        (concat "[" git-status "]"))))
 
 (provide 'eshell-prompt-extras)
 
