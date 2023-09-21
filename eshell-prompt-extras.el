@@ -173,7 +173,7 @@
   :group 'epe
   :type 'boolean)
 
-(defcustom epe-show-git-status-estended nil
+(defcustom epe-show-git-status-extended nil
   "A flag which indicates whether show extended git information."
   :group 'epe
   :type 'boolean)
@@ -712,7 +712,7 @@ The status is displayed on the last line."
    " "))
 
 (defun epe-git-prompt-info ()
-  (if epe-show-git-status-estended
+  (if epe-show-git-status-extended
       (epe-git-extended-info)
     (epe-git-default-info)))
 
