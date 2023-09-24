@@ -106,6 +106,46 @@
   :group 'epe
   :type 'string)
 
+(defcustom epe-git-modified-char "!"
+  "The character to show when the git repository has modified files."
+  :group 'epe
+  :type 'string)
+
+(defcustom epe-git-renamed-char "»"
+  "The character to show when the git repository has renamed files."
+  :group 'epe
+  :type 'string)
+
+(defcustom epe-git-deleted-char "x"
+  "The character to show when the git repository has deleted files."
+  :group 'epe
+  :type 'string)
+
+(defcustom epe-git-added-char "+"
+  "The character to show when the git repository has added files."
+  :group 'epe
+  :type 'string)
+
+(defcustom epe-git-unmerged-char "≠"
+  "The character to show when the git repository has unmerged files."
+  :group 'epe
+  :type 'string)
+
+(defcustom epe-git-ahead-char "↑"
+  "The character to show when the git repository has ahead commits."
+  :group 'epe
+  :type 'string)
+
+(defcustom epe-git-behind-char "↓"
+  "The character to show when the git repository has behind commits."
+  :group 'epe
+  :type 'string)
+
+(defcustom epe-git-diverged-char "↕"
+  "The character to show when the git repository has diverged commits."
+  :group 'epe
+  :type 'string)
+
 (defcustom epe-git-detached-HEAD-char "D:"
   "The character to show when the git repository is in detached HEAD state."
   :group 'epe
@@ -130,6 +170,11 @@
 
 (defcustom epe-pipeline-show-time t
   "A flag which indicates whether epe-pipeline should show the time."
+  :group 'epe
+  :type 'boolean)
+
+(defcustom epe-show-git-status-extended nil
+  "A flag which indicates whether show extended git information."
   :group 'epe
   :type 'boolean)
 
@@ -426,6 +471,41 @@ uncommitted changes, nil otherwise."
 (defvar epe-git-status
   "git status --porcelain -b 2> /dev/null")
 
+(defvar epe-git-describe
+  "git describe --always --tags --long 2> /dev/null")
+
+(defun epe-git-modified ()
+  "Return `epe-git-modified-char' if your git has modified files."
+  (and (epe-git-modified-p) epe-git-modified-char))
+
+(defun epe-git-renamed ()
+  "Return `epe-git-renamed-char' if your git has renamed files."
+  (and (epe-git-renamed-p) epe-git-renamed-char))
+
+(defun epe-git-deleted ()
+  "Return `epe-git-deleted-char' if your git has deleted files."
+  (and (epe-git-deleted-p) epe-git-deleted-char))
+
+(defun epe-git-added ()
+  "Return `epe-git-added-char' if your git has edded files."
+  (and (epe-git-added-p) epe-git-added-char))
+
+(defun epe-git-unmerged ()
+  "Return `epe-git-unmerged-char' if your git has unmerged files."
+  (and (epe-git-unmerged-p) epe-git-unmerged-char))
+
+(defun epe-git-ahead ()
+  "Return `epe-git-ahead-char' if your git has ahead commits."
+  (and (epe-git-ahead-p) epe-git-ahead-char))
+
+(defun epe-git-behind ()
+  "Return `epe-git-behind-char' if your git has behind commits."
+  (and (epe-git-behind-p) epe-git-behind-char))
+
+(defun epe-git-diverged ()
+  "Return `epe-git-diverged-char' if your git has diverged commits."
+  (and (epe-git-diverged-p) epe-git-diverged-char))
+
 (defun epe-git-p-helper (command)
   "Return if COMMAND has output."
   (not (string= (shell-command-to-string command) "")))
@@ -498,12 +578,7 @@ uncommitted changes, nil otherwise."
      (concat
       (epe-colorize-with-face ":" 'epe-dir-face)
       (epe-colorize-with-face
-       (concat (epe-git-branch)
-               (epe-git-dirty)
-               (epe-git-untracked)
-               (let ((unpushed (epe-git-unpushed-number)))
-                 (unless (= unpushed 0)
-                   (concat ":" (number-to-string unpushed)))))
+       (epe-git-prompt-info)
        'epe-git-face)))
    (epe-colorize-with-face " λ" (if (zerop eshell-last-command-status)
                                     'epe-success-face
@@ -553,11 +628,7 @@ uncommitted changes, nil otherwise."
        (concat
         (epe-colorize-with-face ":" 'epe-dir-face)
         (epe-colorize-with-face
-         (concat (epe-git-branch)
-                 (epe-git-dirty)
-                 (epe-git-untracked)
-                 (unless (= (epe-git-unpushed-number) 0)
-                   (concat ":" (number-to-string (epe-git-unpushed-number)))))
+         (epe-git-prompt-info)
          'epe-git-face)))
      (epe-colorize-with-face " λ" (if (zerop eshell-last-command-status)
                                       'epe-success-face
@@ -598,12 +669,7 @@ uncommitted changes, nil otherwise."
      (concat
       (epe-colorize-with-face ":" 'epe-dir-face)
       (epe-colorize-with-face
-       (concat (epe-git-branch)
-	       (epe-git-dirty)
-	       (epe-git-untracked)
-	       (let ((unpushed (epe-git-unpushed-number)))
-		 (unless (= unpushed 0)
-		   (concat ":" (number-to-string unpushed)))))
+       (epe-git-prompt-info)
        'epe-git-face)))
    (epe-colorize-with-face " λ" 'epe-symbol-face)
    (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
@@ -640,16 +706,55 @@ The status is displayed on the last line."
            (concat "/"
                    (epe-colorize-with-face git-component 'epe-git-dir-face)))
          (epe-colorize-with-face
-          (concat (or (epe-git-branch)
-                      (epe-git-tag))
-                  (epe-git-dirty)
-                  (epe-git-untracked)
-                  (let ((unpushed (epe-git-unpushed-number)))
-                    (unless (= unpushed 0)
-                      (concat ":" (number-to-string unpushed)))))
+          (epe-git-prompt-info)
           'epe-git-face)))))
    (epe-colorize-with-face "\n>" '(:weight bold))
    " "))
+
+(defun epe-git-prompt-info ()
+  (if epe-show-git-status-extended
+      (epe-git-extended-info)
+    (epe-git-default-info)))
+
+(defun epe-git-default-info ()
+  "Default git information (epe prompt backwards compatibility)"
+  (concat (or (epe-git-branch)
+              (epe-git-tag))
+          (epe-git-dirty)
+          (epe-git-untracked)
+          (let ((unpushed (epe-git-unpushed-number)))
+            (unless (= unpushed 0)
+              (concat ":" (number-to-string unpushed))))))
+
+(defun epe-git-extended-info ()
+  (concat (epe-git-description)
+          (epe-git-full-status)
+          (let ((unpushed (epe-git-unpushed-number)))
+            (unless (= unpushed 0)
+              (concat ":" (number-to-string unpushed))))))
+
+(defun epe-git-description ()
+  (let* ((git-desc (epe-trim-newline
+                    (shell-command-to-string epe-git-describe)))
+         (git-branch (epe-git-branch))
+         (description (concat git-branch "-" git-desc )))
+    (if (> (length (string-trim description)) 1)
+        (concat "(" description ")"))))
+
+(defun epe-git-full-status ()
+  (let ((git-status (concat
+                     (epe-git-dirty)
+                     (epe-git-untracked)
+                     (epe-git-modified)
+                     (epe-git-renamed)
+                     (epe-git-deleted)
+                     (epe-git-added)
+                     (epe-git-unmerged)
+                     (epe-git-ahead)
+                     (epe-git-behind)
+                     (epe-git-diverged))))
+    (if (> (length (string-trim git-status)) 0)
+        (concat "[" git-status "]"))))
 
 (provide 'eshell-prompt-extras)
 
